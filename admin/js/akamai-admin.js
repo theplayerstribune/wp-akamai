@@ -1,83 +1,151 @@
-(function( $ ) {
-	'use strict';
+(function(window, $, ajaxurl) {
+    function getCredentials() {
+        return {
+            'host': $('#akamai-credentials-host').val(),
+            'access-token': $('#akamai-credentials-access-token').val(),
+            'client-token': $('#akamai-credentials-client-token').val(),
+            'client-secret': $('#akamai-credentials-client-secret').val(),
+        };
+    }
 
-	/**
-	 * All of the code for your admin-facing JavaScript source
-	 * should reside in this file.
-	 *
-	 * Note: It has been assumed you will write jQuery code here, so the
-	 * $ function reference has been prepared for usage within the scope
-	 * of this function.
-	 *
-	 * This enables you to define handlers, for when the DOM is ready:
-	 *
-	 * $(function() {
-	 *
-	 * });
-	 *
-	 * When the window is loaded:
-	 *
-	 * $( window ).load(function() {
-	 *
-	 * });
-	 *
-	 * ...and/or other possibilities.
-	 *
-	 * Ideally, it is not considered best practise to attach more than a
-	 * single DOM-ready or window-load handler for a particular page.
-	 * Although scripts in the WordPress core, Plugins and Themes may be
-	 * practising this, we should strive to set a better example in our own work.
-	 */
+    function setVerifyButtonDisabled(setting) {
+        if (setting !== undefined) {
+            $('#verify-creds').prop('disabled', !!setting);
+            return;
+        }
+        const creds = getCredentials();
+        const vals = Object.keys(creds).map(function(key) {
+            return creds[key];
+        });
+        $('#verify-creds').prop('disabled', vals.includes(''));
+    }
 
-	$(function() {
-        $('#verify').click(function(e) {
-            e.stopPropagation();
+    function getRandomNumbers() {
+        const c = window.crypto || window.msCrypto;
+        const a = new Uint32Array(1);
+        c.getRandomValues(a);
+        return a[0].toString();
+    }
 
-			var data = {
-				'action': 'akamai_verify_credentials',
-				'edgerc': $('#akamai-edgerc').val(),
-				'section': $('#akamai-section').val()
-			};
+    function NoticeDrawer({ onPush }) {
+        this.drawer    = {};
+        this.successes = [];
+        this.onPush    = onPush.bind(this);
+    }
 
-			// We can also pass the url value separately from ajaxurl for front end AJAX implementations
-			$.post(ajaxurl, data, function(response) {
-				var response = $.parseJSON(response);
-				var timeout = false;
-
-				if ($('#verify-msg').length == 0) {
-					$('#verify').before($('<div id="verify-msg" class="notice"></div>'));
-				} else {
-					$('#verify-msg').empty();
-				}
-
-				if (timeout) {
-					clearInterval(timeout);
-				}
-
-				var msg = $('#verify-msg');
-
-				timeout = setTimeout(function() {
-					msg.fadeOut();
-					msg.remove();
-				}, 5000);
-
-				if (response.success) {
-					msg.removeClass('notice-error');
-					msg.addClass('notice-success');
-					msg.append($('<p>Credentials found successfully.</p>'));
-				} else if (response.error) {
-					msg.removeClass('notice-success');
-					msg.addClass('notice-error');
-					msg.append($('<p>' + response.error + '</p>'));
-				} else {
-					msg.removeClass('notice-success');
-					msg.addClass('notice-error');
-					msg.append($('<p>An unknown error occured</p>'));
-				}
-
-				$('#verify').before(msg);
-			});
-		});
+    jQuery.fn.extend({
+        noticeShow: function() {
+            $(this).css('opacity', 0)
+                .slideDown('normal')
+                .animate(
+                    { opacity: 1 },
+                    { queue: false, duration: 'normal' }
+                );
+        },
+        noticeSlideOut: function() {
+            $(this).slideUp('normal', function () {
+                $(this).remove();
+            });
+        },
+        noticeFadeOut: function() {
+            $(this).fadeOut('fast', function () {
+                $(this).remove();
+            });
+        },
     });
 
-})( jQuery );
+    NoticeDrawer.prototype.add = function ({ id, message, type }) {
+        this.drawer[id] = this.createNotification({ id, message, type });
+        if ('success' === type) {
+            this.successes.push(this.drawer[id]);
+        };
+        this.onPush({ id, message, type });
+    };
+
+    NoticeDrawer.prototype.createNotification = function ({ id, message, type }) {
+        const $div = $(`<div id="${id}"
+                            class="notice notice-${type} is-dismissable"
+                            style="position: relative; display: none"></div>`);
+        const $btn = $(`<button type="button" class="notice-dismiss">
+                            <span class="screen-reader-text">Dismiss this notice.</span>
+                        </button>`);
+        const $msg = $('<p>').text(message);
+
+        $btn.click(function() {
+            $div.noticeFadeOut();
+        });
+
+        return $div.prepend($msg).append($btn);
+    }
+
+    const verificationNotices = new NoticeDrawer({
+        onPush: function ({ id, type }) {
+            if ('success' === type && this.successes.length > 1) {
+                this.successes.shift().noticeSlideOut();
+            }
+            $('#verification-notices-drawer').append(this.drawer[id]);
+            this.drawer[id].noticeShow();
+        }
+    });
+
+    $(function() {
+        setVerifyButtonDisabled();
+        $("form :input").keyup(function() { setVerifyButtonDisabled(); });
+        $("form :input").change(function() { setVerifyButtonDisabled(); });
+
+        $('#verify-creds').click(function(e) {
+            e.stopPropagation();
+
+            setVerifyButtonDisabled(true);
+            $('#verify-creds-spinner').css({ visibility: 'visible' });
+
+            $.ajax({
+                method: 'POST',
+                url: ajaxurl,
+                dataType: 'json',
+                data: {
+                    'action': 'akamai_verify_credentials',
+                    'credentials': getCredentials(),
+                },
+            })
+            .done(function(response) {
+                console.log({verification: { response }});
+
+                setVerifyButtonDisabled(false);
+                $('#verify-creds-spinner').css({ visibility: 'hidden' });
+
+                if (response.success) {
+                    verificationNotices.add({
+                        id: `verify-creds-success-${getRandomNumbers()}`,
+                        type: 'success',
+                        message: 'Credentials verified successfully.',
+                    });
+                } else if (response.error) {
+                    verificationNotices.add({
+                        id: `verify-creds-error-${getRandomNumbers()}`,
+                        type: 'error',
+                        message: response.error,
+                    });
+                } else {
+                    verificationNotices.add({
+                        id: `verify-creds-error-${getRandomNumbers()}`,
+                        type: 'error',
+                        message: 'An unexpected error occurred.',
+                    });
+                }
+            })
+            .fail(function(error) {
+                console.log({verification: { error }});
+
+                setVerifyButtonDisabled(false);
+                $('#verify-creds-spinner').hide();
+
+                verificationNotices.add({
+                    id: `verify-creds-error-${getRandomNumbers()}`,
+                    type: 'error',
+                    message: 'An unexpected error occurred: ' + error,
+                });
+            });
+        });
+    });
+})(window, window.jQuery, window.ajaxurl);
