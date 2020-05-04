@@ -22,15 +22,15 @@
  */
 class Akamai_Activator {
 
-	/**
-	 * Short Description. (use period)
-	 *
-	 * Long Description.
-	 *
-	 * @since    0.1.0
-	 */
-	public static function activate() {
-		add_option( 'akamai-version', Akamai::VERSION );
-	}
+    /**
+     * Short Description. (use period)
+     *
+     * Long Description.
+     *
+     * @since    0.1.0
+     */
+    public static function activate() {
+        add_option( 'akamai-version', Akamai::VERSION );
+    }
 
 }

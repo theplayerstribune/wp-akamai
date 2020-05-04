@@ -41,13 +41,13 @@ class Akamai_Purge {
         return self::$instance;
     }
 
-	/**
-	 * A reference to the Akamai Plugin class instance.
-	 *
-	 * @since 0.7.0
-	 * @var   string $plugin The Akamai Plugin class instance.
-	 */
-	public $plugin;
+    /**
+     * A reference to the Akamai Plugin class instance.
+     *
+     * @since 0.7.0
+     * @var   string $plugin The Akamai Plugin class instance.
+     */
+    public $plugin;
 
     /**
      * Initiate actions.
@@ -125,7 +125,7 @@ class Akamai_Purge {
         $client = new Akamai_Purge_Request(
             $this->plugin->get_edge_auth_client(),
             $this->plugin->get_user_agent()
-		);
+        );
         $response = $client->purge(
             $options = $settings,
             $objects = $cache_tags
