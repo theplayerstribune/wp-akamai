@@ -12,6 +12,7 @@
 }
 
 .akamai-content header {
+    position: relative;
     margin: 0;
     padding: 0;
     left: 0;
@@ -21,6 +22,15 @@
     background-color: #133947;
     background-repeat: no-repeat;
     background-position: 0 15px;
+}
+
+.akamai-content span.akamai-plugin-version {
+    position: absolute;
+    bottom: 12px;
+    display: inline-block;
+    color: white;
+    padding-left: 14px;
+    font-size: larger;
 }
 
 .akamai-content header h1 {

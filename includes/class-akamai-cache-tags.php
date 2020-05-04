@@ -1,31 +1,25 @@
 <?php
 
-/**
- * The file that defines cache tag behavior.
- *
- * @link    https://developer.akamai.com
- * @since   0.7.0
- *
- * @package Akamai
- */
+namespace Akamai\WordPress;
 
 /**
- * The core plugin class for managing cache tag behavior.
+ * Akamai_Cache_Tags is a singleton for managing cache tag behavior.
  *
- * Singleton for defining cache tag behavior. This means: basic rules for
- * generating cache tags (ie surrogate keys), and determining which tags are
- * relevant to (emitted as headers or sent in a purge request) for a given post.
+ * Handles basic rules for generating cache tags (ie surrogate keys), and
+ * determining which tags are relevant to (emitted as headers or sent in a purge
+ * request) for a given post.
  *
- * API TO IMPLEMENT:
+ * @todo:
  *
- * get_tags_for_cache_header( ??? ) : [string]
- * get_tags_for_purge_term( ??? )   : [string]
- * get_tags_for_purge_author( ??? ) : [string]
+ *   - get_tags_for_cache_header( ??? ) : [string] => switch on type
+ *   - get_tags_for_purge_term( ??? )   : [string]
+ *   - get_tags_for_purge_author( ??? ) : [string]
  *
  * @since   0.7.0
- * @package Akamai
+ * @package Akamai\WordPress
  */
 class Akamai_Cache_Tags {
+
     /**
      * The one instance of Akamai_Cache_Tags.
      *
@@ -78,18 +72,20 @@ class Akamai_Cache_Tags {
     /**
      * A reference to the Akamai Plugin class instance.
      *
-     * @since 0.7.0
-     * @var   string $plugin The Akamai Plugin class instance.
+     * @since  0.7.0
+     * @access protected
+     * @var    string $plugin The Akamai Plugin class instance.
      */
-    public $plugin;
+    protected $plugin;
 
     /**
-     * ...
+     * Instantiates an instance.
      *
-     * @since 0.7.0
-     * @param string $plugin The Akamai class instance.
+     * @since  0.7.0
+     * @access protected
+     * @param  string $plugin The Akamai class instance.
      */
-    public function __construct( $plugin ) {
+    protected function __construct( $plugin ) {
         $this->plugin = $plugin;
     }
 
@@ -102,7 +98,8 @@ class Akamai_Cache_Tags {
      * @return string A formatted tag part (code-value).
      */
     public function tag_part( $name, $value ) {
-        $code = apply_filters( "akamai_{$name}_code", static::$default_codes[$name] );
+        $code = apply_filters(
+            "akamai_{$name}_code", static::$default_codes[$name] );
         return sprintf( '%s-%s', $code, $value );
     }
 
@@ -205,7 +202,8 @@ class Akamai_Cache_Tags {
         foreach ( static::$always_purged_templates as $template_type ) {
             $tags[] = $this->get_template_tag( $template_type );
         }
-        return apply_filters( 'akamai_always_purged_tags', $tags, static::$instance );
+        return apply_filters(
+            'akamai_always_purged_tags', $tags, static::$instance );
     }
 
     /**
@@ -219,7 +217,8 @@ class Akamai_Cache_Tags {
         if ( is_multisite() ) {
             $tags[] = $this->get_site_tag();
         }
-        return apply_filters( 'akamai_always_cached_tags', $tags, static::$instance );
+        return apply_filters(
+            'akamai_always_cached_tags', $tags, static::$instance );
     }
 
     /**
@@ -257,10 +256,15 @@ class Akamai_Cache_Tags {
             $post = get_post( $post );
         }
         if ( ! empty( $post ) ) {
-            $taxonomies = apply_filters( 'akamai_related_taxonomies', (array) get_taxonomies() );
+            $taxonomies = apply_filters(
+                'akamai_related_taxonomies', (array) get_taxonomies() );
 
             foreach ( $taxonomies as $taxonomy ) {
-                $terms = wp_get_post_terms( $post->ID, $taxonomy, [ 'fields' => 'ids' ] );
+                $terms = wp_get_post_terms(
+                    $post->ID,
+                    $taxonomy,
+                    [ 'fields' => 'ids' ]
+                );
 
                 if ( is_array( $terms ) ) {
                     foreach ( $terms as $term ) {
@@ -292,7 +296,8 @@ class Akamai_Cache_Tags {
             $post = get_post( $post );
         }
         if ( empty( $post ) ) {
-            return apply_filters( 'akamai_purge_post_tags', $tags, $post, static::$instance );
+            return apply_filters(
+                'akamai_purge_post_tags', $tags, $post, static::$instance );
         }
         $tags[] = $this->get_post_tag( $post );
 
@@ -300,9 +305,17 @@ class Akamai_Cache_Tags {
             $r_posts = apply_filters(
                 'akamai_purge_post_related_posts', [], $post, static::$instance );
             $r_terms = apply_filters(
-                'akamai_purge_post_related_terms', $this->related_term_tags( $post ), $post, static::$instance );
+                'akamai_purge_post_related_terms',
+                $this->related_term_tags( $post ),
+                $post,
+                static::$instance
+            );
             $r_authors = apply_filters(
-                'akamai_purge_post_related_authors', $this->related_author_tags( $post ), $post, static::$instance );
+                'akamai_purge_post_related_authors',
+                $this->related_author_tags( $post ),
+                $post,
+                static::$instance
+            );
             $tags = array_merge( $tags, $r_posts, $r_terms, $r_authors );
         }
 
@@ -310,7 +323,8 @@ class Akamai_Cache_Tags {
             $tags = array_merge( $this->always_purged_tags(), $tags );
         }
 
-        return apply_filters( 'akamai_purge_post_tags', $tags, $post, static::$instance );
+        return apply_filters(
+            'akamai_purge_post_tags', $tags, $post, static::$instance );
     }
 
     /**
@@ -335,5 +349,4 @@ class Akamai_Cache_Tags {
     public function get_tags_for_purge_all() {
         return [ $this->get_site_code() ];
     }
-
 }

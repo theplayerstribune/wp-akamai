@@ -1,16 +1,16 @@
 <?php
 
 /**
- * The plugin bootstrap file
+ * The plugin bootstrap file.
  *
- * This file is read by WordPress to generate the plugin information in the plugin
- * admin area. This file also includes all of the dependencies used by the plugin,
- * registers the activation and deactivation functions, and defines a function
- * that starts the plugin.
+ * This file is read by WordPress to generate the plugin information in the
+ * plugin admin area. This file also includes all of the dependencies used by
+ * the plugin, registers the activation and deactivation functions, and defines
+ * a function that starts the plugin.
  *
  * @link              https://developer.akamai.com
  * @since             0.2.0
- * @package           Akamai
+ * @package           Akamai\WordPress
  * @author            Davey Shafik <dshafik@akamai.com>
  *
  * @wordpress-plugin
@@ -25,6 +25,8 @@
  * Text Domain:       akamai
  */
 
+use \Akamai\WordPress\{Akamai_Activator, Akamai_Deactivator, Akamai};
+
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
     die;
@@ -35,11 +37,18 @@ define( 'AKAMAI_MIN_PHP', '5.3' );
 if ( version_compare( phpversion(), AKAMAI_MIN_PHP, '<' ) ) {
     add_action( 'admin_notices', function () {
         echo '<div class="notice notice-error">' .
-             __( 'Error: "Akamai for WordPress" requires a newer version of PHP to be running.', 'akamai' ) .
-             '<br/>' . __( 'Minimal version of PHP required: ',
-                'akamai' ) . '<strong>' . AKAMAI_MIN_PHP . '</strong>' .
-             '<br/>' . __( 'Your server\'s PHP version: ', 'akamai' ) . '<strong>' . phpversion() . '</strong>' .
-             '</div>';
+            __(
+                 'Error: "Akamai for WordPress" ' .
+                 'requires a newer version of PHP to be running.',
+                 'akamai'
+            ) .
+            '<br/>' . __(
+                'Minimal version of PHP required: ',
+                'akamai'
+            ) . '<strong>' . AKAMAI_MIN_PHP . '</strong>' .
+            '<br/>' . __( 'Your server\'s PHP version: ', 'akamai' ) .
+            '<strong>' . phpversion() . '</strong>' .
+            '</div>';
     } );
 
     return false;
@@ -58,7 +67,8 @@ require_once 'vendor/akamai-open/edgegrid-auth/src/Authentication/Exception/Sign
  * This action is documented in includes/class-akamai-activator.php
  */
 function activate_akamai() {
-    require_once plugin_dir_path( __FILE__ ) . 'includes/class-akamai-activator.php';
+    require_once
+        plugin_dir_path( __FILE__ ) . 'includes/class-akamai-activator.php';
     Akamai_Activator::activate();
 }
 
@@ -67,7 +77,8 @@ function activate_akamai() {
  * This action is documented in includes/class-akamai-deactivator.php
  */
 function deactivate_akamai() {
-    require_once plugin_dir_path( __FILE__ ) . 'includes/class-akamai-deactivator.php';
+    require_once
+        plugin_dir_path( __FILE__ ) . 'includes/class-akamai-deactivator.php';
     Akamai_Deactivator::deactivate();
 }
 
@@ -75,7 +86,7 @@ register_activation_hook( __FILE__, 'activate_akamai');
 register_deactivation_hook( __FILE__, 'deactivate_akamai');
 
 /**
- * The core plugin class that is used to define internationalization,
+ * The core plugin classes that are used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
 require plugin_dir_path( __FILE__ ) . 'includes/class-akamai.php';
@@ -90,10 +101,8 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-akamai.php';
  * @since    0.1.0
  */
 function run_akamai() {
-
     $plugin = new Akamai();
     $plugin->run();
-
 }
 
 run_akamai();

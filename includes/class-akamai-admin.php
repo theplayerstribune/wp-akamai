@@ -1,34 +1,51 @@
 <?php
 
-/**
- * The admin-specific functionality of the plugin.
- *
- * @link    https://developer.akamai.com
- * @since   0.1.0
- *
- * @package Akamai
- */
+namespace Akamai\WordPress;
 
 use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
 
 /**
- * The admin-specific functionality of the plugin.
+ * Akamai_Admin is a singleton class that handles admin-specific
+ * functionality of the plugin.
  *
- * Defines the plugin name, version, and two examples hooks for how to
- * enqueue the admin-specific stylesheet and JavaScript.
+ * Defines the plugin name, version, and hooks for enqueueing admin-specific
+ * stylesheets and scripts, creating settings menus, and handling options
+ * updates.
  *
- * @package    Akamai
- * @subpackage Akamai/admin
- * @author     Davey Shafik <dshafik@akamai.com>
+ * @since   0.1.0
+ * @package Akamai\WordPress
+ * @author  Davey Shafik <dshafik@akamai.com>
  */
 class Akamai_Admin {
+
+    /**
+     * The one instance of Akamai_Admin.
+     *
+     * @since 0.7.0
+     * @var   Akamai_Purge
+     */
+    private static $instance;
+
+    /**
+     * Instantiate or return the one Akamai_Admin instance.
+     *
+     * @since  0.7.0
+     * @param  string       $akamai The Akamai class instance.
+     * @return Akamai_Purge The created instance.
+     */
+    public static function instance( $akamai ) {
+        if ( is_null( self::$instance ) ) {
+            self::$instance = new self( $akamai );
+        }
+        return self::$instance;
+    }
 
     /**
      * Get the Akamai logo icon for SVG.
      *
      * @since 0.1.0
      */
-    static public function get_icon() {
+    public static function get_icon() {
         return 'data:image/svg+xml;charset=utf-8;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3' .
                'LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6c3ZnPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgcHJlc2VydmVBc3BlY3RSYXRp' .
                'bz0ieE1pZFlNaWQiPg0KICA8Zz4NCiAgIDxwYXRoIGQ9Im0xMC44NTM2NiwxOS4zNzI1OWMtNC4wMzI2MiwtMS4yMzU5NyAtNi45' .
@@ -58,20 +75,21 @@ class Akamai_Admin {
     /**
      * A reference to the Akamai class instance.
      *
-     * @since 0.7.0
-     * @var   string $akamai The Akamai class instance.
+     * @since  0.7.0
+     * @access protected
+     * @var    string $akamai The Akamai class instance.
      */
-    public $plugin;
+    protected $plugin;
 
     /**
      * Initialize the class and set its properties.
      *
-     * @since 0.1.0
-     *
-     * @param string $plugin A reference to the plugin class instance.
+     * @since  0.1.0
+     * @access protected
+     * @param  string $plugin A reference to the plugin class instance.
      */
-    public function __construct( $plugin ) {
-        $this->menu_page_id = "toplevel_page_{$plugin->plugin_name}";
+    protected function __construct( $plugin ) {
+        $this->menu_page_id = "toplevel_page_{$plugin->name}";
         $this->plugin       = $plugin;
     }
 
@@ -82,7 +100,7 @@ class Akamai_Admin {
      * @return string The plugin name.
      */
     public function name() {
-        return $this->plugin->plugin_name;
+        return $this->plugin->name;
     }
 
     /**
@@ -92,7 +110,7 @@ class Akamai_Admin {
      * @return string The plugin version.
      */
     public function version() {
-        return $this->plugin->version;
+        return $this->plugin::$version;
     }
 
     /**
@@ -156,14 +174,6 @@ class Akamai_Admin {
      * @since 0.1.0
      */
     public function add_plugin_admin_menu() {
-        /*
-         * Add a top-level menu
-         *
-         * NOTE: Alternative menu locations are available via WordPress
-         * administration menu functions.
-         *
-         * Administration Menus: http://codex.wordpress.org/Administration_Menus
-         */
         add_menu_page(
             'Akamai for WordPress',
             'Akamai for WP',
@@ -176,8 +186,6 @@ class Akamai_Admin {
 
     /**
      * Add settings action link to the plugins page.
-     *
-     * Documentation: https://codex.wordpress.org/Plugin_API/Filter_Reference/plugin_action_links_(plugin_file_name)
      *
      * @since 0.1.0
      * @param array $links An array of links, I guess?
@@ -198,7 +206,8 @@ class Akamai_Admin {
      * @since 0.1.0
      */
     public function display_plugin_setup_page() {
-        include_once( plugin_dir_path( __DIR__ ) . 'admin/partials/akamai-admin-display.php' );
+        include_once(
+            plugin_dir_path( __DIR__ ) . 'admin/partials/akamai-admin-display.php' );
     }
 
     /**
@@ -352,5 +361,4 @@ class Akamai_Admin {
 
         return $settings;
     }
-
 }

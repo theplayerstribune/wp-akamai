@@ -1,36 +1,25 @@
 <?php
 
-/**
- * Fired during plugin activation
- *
- * @link       https://developer.akamai.com
- * @since      0.1.0
- *
- * @package    Akamai
- * @subpackage Akamai/includes
- */
+namespace Akamai\WordPress;
 
 /**
- * Fired during plugin activation.
+ * Akamai_Activator is fired during plugin activation.
  *
  * This class defines all code necessary to run during the plugin's activation.
  *
- * @since      0.1.0
- * @package    Akamai
- * @subpackage Akamai/includes
- * @author     Davey Shafik <dshafik@akamai.com>
+ * @since   0.1.0
+ * @package Akamai\WordPress
+ * @author  Davey Shafik <dshafik@akamai.com>
  */
 class Akamai_Activator {
 
     /**
-     * Short Description. (use period)
-     *
-     * Long Description.
+     * Runs on plugin activation.
      *
      * @since    0.1.0
      */
     public static function activate() {
-        add_option( 'akamai-version', Akamai::VERSION );
+        add_option( 'akamai-version', Akamai::$version );
     }
 
 }

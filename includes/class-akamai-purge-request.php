@@ -1,17 +1,11 @@
 <?php
 
-/**
- * The file that implements the plugin's purge action.
- *
- * @link    https://developer.akamai.com
- * @since   0.7.0
- * @package Akamai
- */
+namespace Akamai\WordPress;
 
- use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
+use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
 
 /**
- * The class for implementing purge actions. It issues purge requests for a
+ * Akamai_Purge_Request implements purge actions. It issues purge requests for a
  * given resource. It will handle purging by individual URL, by "cache tag" (ie
  * surrogate key), and sitewide and multi-site "property" purges.
  *
@@ -19,9 +13,10 @@
  * taken from the core plugin class (Akamai).
  *
  * @since   0.7.0
- * @package Akamai
+ * @package Akamai\WordPress
  */
 class Akamai_Purge_Request {
+
     /**
      * Takes some information (either a WP response array only, or a specific
      * error, or both), and returns a normalized response information array so

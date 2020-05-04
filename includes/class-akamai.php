@@ -1,21 +1,11 @@
 <?php
 
-/**
- * The file that defines the core plugin class.
- *
- * A class definition that includes attributes and functions used across both
- * the public-facing side of the site and the admin area.
- *
- * @link       https://developer.akamai.com
- * @since      0.1.0
- *
- * @package    Akamai
- */
+namespace Akamai\WordPress;
 
 use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
 
 /**
- * The core plugin class.
+ * Akamai is the core plugin class.
  *
  * This is used to define internationalization, admin-specific hooks, and
  * public-facing site hooks.
@@ -24,35 +14,43 @@ use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
  * version of the plugin.
  *
  * @since      0.1.0
- * @package    Akamai
- * @subpackage Akamai/includes
+ * @package    Akamai\WordPress
  * @author     Davey Shafik <dshafik@akamai.com>
  */
 class Akamai {
-    /**
-     * Plugin version.
-     *
-     * @since 0.1.0
-     * @var   string $version ...
-     */
-    public $version = '0.7.0';
 
     /**
-     * The unique identifier of this plugin.
+     * The unique identifier of the plugin.
+     *
+     * @since 0.7.0
+     * @var   string The string used to uniquely identify this plugin.
+     */
+    public static $identifier = 'akamai';
+
+    /**
+     * Plugin's current version.
      *
      * @since 0.1.0
-     * @var   string $plugin_name The string used to uniquely identify this
-     *               plugin.
+     * @var   string $version The current version of the plugin.
      */
-    public $plugin_name;
+    public static $version = '0.7.0';
+
+    /**
+     * The name for the plugin, essentially the same as the static
+     * unique identifier.
+     *
+     * @since 0.7.0
+     * @var   string $name The name for the plugin.
+     */
+    public $name;
 
     /**
      * The basename for the plugin core class file.
      *
      * @since 0.7.0
-     * @var   string $plugin_name The basename for the plugin core class file.
+     * @var   string $basename The basename for the plugin core class file.
      */
-    public $plugin_basename;
+    public $basename;
 
     /**
      * The loader that's responsible for maintaining and registering all hooks
@@ -119,20 +117,20 @@ class Akamai {
     /**
      * Define the core functionality of the plugin.
      *
-     * Set the plugin name and the plugin version that can be used throughout the plugin.
-     * Load the dependencies, define the locale, and set the hooks for the admin area and
-     * the public-facing side of the site.
+     * Set the plugin name and the plugin version that can be used throughout
+     * the plugin. Load the dependencies, define the locale, and set the hooks
+     * for the admin area and the public-facing side of the site.
      *
      * @since    0.1.0
      */
     public function __construct() {
-        $this->plugin_name = 'akamai';
-        $this->plugin_basename = plugin_basename(
-            plugin_dir_path( __DIR__ ) . $this->plugin_name . '.php' );
+        $this->name = static::$identifier;
+        $this->basename = plugin_basename(
+            plugin_dir_path( __DIR__ ) . $this->name . '.php' );
 
         $this->load_dependencies();
         $this->loader = new Akamai_Loader();
-        $this->admin = new Akamai_Admin( $this );
+        $this->admin = Akamai_Admin::instance( $this );
         $this->purge = Akamai_Purge::instance( $this );
 
         $this->define_admin_hooks();
@@ -171,7 +169,7 @@ class Akamai {
         $this->loader->add_action(
             'admin_menu', $this->admin, 'add_plugin_admin_menu' );
         $this->loader->add_filter(
-            "plugin_action_links_{$this->plugin_basename}",
+            "plugin_action_links_{$this->basename}",
             $this->admin,
             'add_action_links'
         );
@@ -216,7 +214,7 @@ class Akamai {
     public function get_settings( $new_settings = [] ) {
         $settings = [];
 
-        $old_settings = get_option( $this->plugin_name );
+        $old_settings = get_option( $this->name );
 
         foreach ( $this->default_options as $key => $default_value ) {
             $settings[$key] =
@@ -290,7 +288,7 @@ class Akamai {
     public function get_user_agent() {
         return
             'WordPress/' . get_bloginfo( 'version' ) . ' ' .
-            get_class( $this ) . '/' . $this->version . ' ' .
+            get_class( $this ) . '/' . static::$version . ' ' .
             'PHP/' . phpversion();
     }
 

@@ -1,24 +1,19 @@
 <?php
 
-/**
- * The file that defines the plugin's purges behavior and hooks.
- *
- * @link    https://developer.akamai.com
- * @since   0.7.0
- *
- * @package Akamai
- */
+namespace Akamai\WordPress;
 
 /**
- * The core plugin class for managing purge behavior.
+ * Akamai_Purge is a singleton for managing purge behavior.
  *
- * Singleton for registering default purges. Based on \Purgely_Purges from
- * the Fastly WP plugin.
+ * Lists default purge actions, implements standard business logic and
+ * hooks around purges, and fires off purge requests. Based on
+ * \Purgely_Purges from the Fastly WP plugin.
  *
  * @since   0.7.0
- * @package Akamai
+ * @package Akamai\WordPress
  */
 class Akamai_Purge {
+
     /**
      * The one instance of Akamai_Purge.
      *
@@ -44,18 +39,20 @@ class Akamai_Purge {
     /**
      * A reference to the Akamai Plugin class instance.
      *
-     * @since 0.7.0
-     * @var   string $plugin The Akamai Plugin class instance.
+     * @since  0.7.0
+     * @access protected
+     * @var    string $plugin The Akamai Plugin class instance.
      */
-    public $plugin;
+    protected $plugin;
 
     /**
      * Initiate actions.
      *
-     * @param string $plugin The Akamai Plugin class instance.
-     * @since 0.7.0
+     * @since  0.7.0
+     * @access protected
+     * @param  string $plugin The Akamai Plugin class instance.
      */
-    public function __construct( $plugin ) {
+    protected function __construct( $plugin ) {
         $this->plugin = $plugin;
 
         // TODO, send these back to the plugin loader.
@@ -194,6 +191,8 @@ class Akamai_Purge {
     /**
      * Checks if queries have been set to create notices in the current page
      * load, and if so display them.
+     *
+     * @since 0.1.0
      */
     public function display_purge_notices() {
         if ( isset( $_GET['akamai-cache-purge-error'] ) ) {
@@ -230,7 +229,7 @@ class Akamai_Purge {
      * @since  0.7.0
      * @return array List of actions.
      */
-    private function purge_post_actions() {
+    public function purge_post_actions() {
         return apply_filters(
             'akamai_purge_post_actions',
             [
@@ -249,7 +248,7 @@ class Akamai_Purge {
      * @since  0.7.0
      * @return array List of actions.
      */
-    private function purge_term_actions() {
+    public function purge_term_actions() {
         return apply_filters(
             'akamai_purge_term_actions',
             [

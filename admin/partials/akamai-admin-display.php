@@ -2,6 +2,7 @@
     <div class="akamai-frame">
         <header>
             <h1>Akamai for WordPress</h1>
+            <span class="akamai-plugin-version"><?= 'WP Plugin v' . $this->version() ?></span>
         </header>
 
         <?php $this->is_post_update() ? null : settings_errors(); ?>
@@ -82,7 +83,13 @@
                     <tr>
                         <th scope="row"></th>
                         <td>
-                            <button id="verify-creds" type="button" class="button button-secondary" name="verify" disabled style="display: inline-block; vertical-align: middle;">Verify Credentials</button>
+                            <button
+                                id="verify-creds"
+                                type="button"
+                                class="button button-secondary"
+                                name="verify"
+                                style="display: inline-block; vertical-align: middle;"
+                                disabled>Verify Credentials</button>
                             <span id="verify-creds-spinner" class="spinner" style="float: none; margin-top: 0;"></span>
                         </td>
                     </tr>
@@ -143,7 +150,8 @@
                                    <?php checked( $this->plugin->setting( 'log-errors' ), '0' ); ?>
                                    value="0">
                             <label for="<?= $this->name() ?>-log-errors-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description">Log all admin/settings/cache/purge errors, updates and events in <code>error_log()</code> as well as showing notices.</p>
+                            <p class="description">Log all admin/settings/cache/purge errors, updates and events in
+                            <code>error_log()</code> as well as showing notices.</p>
                         </td>
                     </tr>
                     <tr>
@@ -162,15 +170,16 @@
                                    <?php checked( $this->plugin->setting( 'log-purges' ), '0' ); ?>
                                    value="0">
                             <label for="<?= $this->name() ?>-log-purges-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description">Log successful purge events and responses in <code>error_log()</code> as well as showing notices.</p>
+                            <p class="description">Log successful purge events and responses in
+                            <code>error_log()</code> as well as showing notices.</p>
                         </td>
                     </tr>
                     </tbody>
                 </table>
 
                 <h1><span><?php esc_attr_e( 'Cache Options', 'wp_admin_style' ); ?></span> <em style="color: #A0A5AA">(Not Implemented)</em></h1>
-                <p style="color: #A0A5AA">Many of these can be set in the Akamai CDN property manager, but the behaviors can also pass
-                thru origin headers or even set their rules based on origin headers.</p>
+                <p style="color: #A0A5AA">Many of these can be set in the Akamai CDN property manager, but the
+                behaviors can also pass thru origin headers or even set their rules based on origin headers.</p>
 
                 <h3><span style="color: #A0A5AA"><?php esc_attr_e( 'General Cache Options', 'wp_admin_style' ); ?></span></h3>
                 <p style="color: #A0A5AA">These settings apply to how the plugin handles caching, revalidation, errors
@@ -213,8 +222,8 @@
                                    class="regular-text code"
                                    spellcheck="false"
                                    disabled/>
-                            <p class="description" style="color: #A0A5AA">Default <code>Cache-Control: …</code> header to emit. This can be
-                            filtered according to the template being served.</p>
+                            <p class="description" style="color: #A0A5AA">Default <code>Cache-Control: …</code> header
+                            to emit. This can be filtered according to the template being served.</p>
                         </td>
                     </tr>
                     </tbody>
@@ -431,8 +440,13 @@
                             </label>
                         </th>
                         <td>
-                            <button id="<?php echo $this->name(); ?>-purge-all-btn" class="button button-warning" disabled style="color: #dc3232; border-color: #dc3232">Send Purge All Request</button>
-                            <p class="description" style="color: #A0A5AA"><em><strong>Warning!</strong> This could cause major disruptions to your site.</em></p>
+                            <button
+                                id="<?php echo $this->name(); ?>-purge-all-btn"
+                                class="button button-warning"
+                                style="color: #dc3232; border-color: #dc3232"
+                                disabled>Send Purge All Request</button>
+                            <p class="description" style="color: #A0A5AA"><em><strong>Warning!</strong>
+                            This could cause major disruptions to your site.</em></p>
                         </td>
                     </tr>
                     </tbody>
