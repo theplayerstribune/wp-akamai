@@ -3,7 +3,7 @@
 namespace Akamai\WordPress;
 
 /**
- * Akamai_Activator is fired during plugin activation.
+ * Activator is fired during plugin activation.
  *
  * This class defines all code necessary to run during the plugin's activation.
  *
@@ -11,7 +11,7 @@ namespace Akamai\WordPress;
  * @package Akamai\WordPress
  * @author  Davey Shafik <dshafik@akamai.com>
  */
-class Akamai_Activator {
+class Activator {
 
     /**
      * Runs on plugin activation.

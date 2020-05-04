@@ -3,7 +3,7 @@
 namespace Akamai\WordPress;
 
 /**
- * Akamai_Loader registers all actions and filters for the plugin.
+ * Loader registers all actions and filters for the plugin.
  *
  * Maintains a list of all hooks that are registered throughout
  * the plugin, and registers them with the WordPress API. Call the
@@ -13,7 +13,7 @@ namespace Akamai\WordPress;
  * @package Akamai\WordPress
  * @author  Davey Shafik <dshafik@akamai.com>
  */
-class Akamai_Loader {
+class Loader {
 
     /**
      * The array of actions registered with WordPress.

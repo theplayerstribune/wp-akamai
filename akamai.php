@@ -25,14 +25,18 @@
  * Text Domain:       akamai
  */
 
-use \Akamai\WordPress\{Akamai_Activator, Akamai_Deactivator, Akamai};
+use \Akamai\WordPress\{Activator, Deactivator, Plugin};
 
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
     die;
 }
 
-define( 'AKAMAI_MIN_PHP', '5.3' );
+if ( ! defined( 'AKAMAI_PLUGIN_PATH' ) ) {
+    define( 'AKAMAI_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
+    define( 'AKAMAI_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+    define( 'AKAMAI_MIN_PHP', '5.3' );
+}
 
 if ( version_compare( phpversion(), AKAMAI_MIN_PHP, '<' ) ) {
     add_action( 'admin_notices', function () {
@@ -67,9 +71,8 @@ require_once 'vendor/akamai-open/edgegrid-auth/src/Authentication/Exception/Sign
  * This action is documented in includes/class-akamai-activator.php
  */
 function activate_akamai() {
-    require_once
-        plugin_dir_path( __FILE__ ) . 'includes/class-akamai-activator.php';
-    Akamai_Activator::activate();
+    require_once AKAMAI_PLUGIN_PATH . 'includes/class-activator.php';
+    Activator::activate();
 }
 
 /**
@@ -77,9 +80,8 @@ function activate_akamai() {
  * This action is documented in includes/class-akamai-deactivator.php
  */
 function deactivate_akamai() {
-    require_once
-        plugin_dir_path( __FILE__ ) . 'includes/class-akamai-deactivator.php';
-    Akamai_Deactivator::deactivate();
+    require_once AKAMAI_PLUGIN_PATH . 'includes/class-deactivator.php';
+    Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'activate_akamai');
@@ -89,7 +91,7 @@ register_deactivation_hook( __FILE__, 'deactivate_akamai');
  * The core plugin classes that are used to define internationalization,
  * admin-specific hooks, and public-facing site hooks.
  */
-require plugin_dir_path( __FILE__ ) . 'includes/class-akamai.php';
+require AKAMAI_PLUGIN_PATH . 'includes/class-plugin.php';
 
 /**
  * Begins execution of the plugin.
@@ -101,7 +103,7 @@ require plugin_dir_path( __FILE__ ) . 'includes/class-akamai.php';
  * @since    0.1.0
  */
 function run_akamai() {
-    $plugin = new Akamai();
+    $plugin = new Plugin();
     $plugin->run();
 }
 

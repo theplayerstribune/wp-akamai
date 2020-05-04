@@ -2,8 +2,10 @@
 
 namespace Akamai\WordPress;
 
+use \Akamai\WordPress\Admin\Admin;
+
 /**
- * Akamai_Deactivator is fired during plugin deactivation.
+ * Deactivator is fired during plugin deactivation.
  *
  * This class defines all code necessary to run during the plugin's deactivation.
  *
@@ -11,7 +13,7 @@ namespace Akamai\WordPress;
  * @package Akamai\WordPress
  * @author  Davey Shafik <dshafik@akamai.com>
  */
-class Akamai_Deactivator {
+class Deactivator {
 
     /**
      * Runs on plugin deactivation. Deletes extant options.
@@ -20,7 +22,7 @@ class Akamai_Deactivator {
      */
     public static function deactivate() {
         delete_option( 'akamai-version' );
-        delete_option( Akamai_Admin::instance()->name() );
+        delete_option( Admin::instance()->name() );
     }
 
 }

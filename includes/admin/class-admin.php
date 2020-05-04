@@ -1,11 +1,11 @@
 <?php
 
-namespace Akamai\WordPress;
+namespace Akamai\WordPress\Admin;
 
 use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
 
 /**
- * Akamai_Admin is a singleton class that handles admin-specific
+ * Admin is a singleton class that handles admin-specific
  * functionality of the plugin.
  *
  * Defines the plugin name, version, and hooks for enqueueing admin-specific
@@ -13,29 +13,29 @@ use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
  * updates.
  *
  * @since   0.1.0
- * @package Akamai\WordPress
+ * @package Akamai\WordPress\Admin
  * @author  Davey Shafik <dshafik@akamai.com>
  */
-class Akamai_Admin {
+class Admin {
 
     /**
-     * The one instance of Akamai_Admin.
+     * The one instance of Admin.
      *
      * @since 0.7.0
-     * @var   Akamai_Purge
+     * @var   Admin
      */
     private static $instance;
 
     /**
-     * Instantiate or return the one Akamai_Admin instance.
+     * Instantiate or return the one Admin instance.
      *
      * @since  0.7.0
-     * @param  string       $akamai The Akamai class instance.
-     * @return Akamai_Purge The created instance.
+     * @param  string $plugin The Plugin class instance.
+     * @return Admin  The created instance.
      */
-    public static function instance( $akamai ) {
+    public static function instance( $plugin ) {
         if ( is_null( self::$instance ) ) {
-            self::$instance = new self( $akamai );
+            self::$instance = new self( $plugin );
         }
         return self::$instance;
     }
@@ -119,20 +119,9 @@ class Akamai_Admin {
      * @since 0.1.0
      */
     public function enqueue_styles() {
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in Akamai_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The Akamai_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
         wp_enqueue_style(
             $this->name(),
-            plugin_dir_url( __DIR__ ) . 'admin/css/akamai-admin.css',
+            AKAMAI_PLUGIN_URL . 'admin/css/akamai-admin.css',
             [],
             $this->version(),
             'all'
@@ -146,20 +135,9 @@ class Akamai_Admin {
      * @since 0.1.0
      */
     public function enqueue_scripts() {
-        /**
-         * This function is provided for demonstration purposes only.
-         *
-         * An instance of this class should be passed to the run() function
-         * defined in Akamai_Loader as all of the hooks are defined
-         * in that particular class.
-         *
-         * The Akamai_Loader will then create the relationship
-         * between the defined hooks and the functions defined in this
-         * class.
-         */
         wp_enqueue_script(
             $this->name(),
-            plugin_dir_url( __DIR__ ) . 'admin/js/akamai-admin.js',
+            AKAMAI_PLUGIN_URL . 'admin/js/akamai-admin.js',
             [ 'jquery' ],
             $this->version(),
             false
@@ -207,7 +185,7 @@ class Akamai_Admin {
      */
     public function display_plugin_setup_page() {
         include_once(
-            plugin_dir_path( __DIR__ ) . 'admin/partials/akamai-admin-display.php' );
+            AKAMAI_PLUGIN_PATH . 'admin/partials/admin-display.php' );
     }
 
     /**
@@ -224,7 +202,7 @@ class Akamai_Admin {
 
     /**
      * Register settings as a single option, after running the $_POST
-     * input through the Akamai_Admin::validate() method.
+     * input through the Admin::validate() method.
      *
      * Should run on admin_init, and it is triggered on an update action.
      *
@@ -268,7 +246,7 @@ class Akamai_Admin {
         try {
             return $this->plugin->purge_api_test( $settings );
         } catch ( Akamai_Auth\Exception\ConfigException $e ) {
-            return Akamai_Purge_Request::normalize_response(
+            return Purge\Request::normalize_response(
                 $wp_response = null,
                 $success = false,
                 $error = $e->getMessage()

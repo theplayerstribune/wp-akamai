@@ -1,37 +1,40 @@
 <?php
 
-namespace Akamai\WordPress;
+namespace Akamai\WordPress\Purge;
+
+use \Akamai\WordPress\Admin\Admin;
+use \Akamai\WordPress\Cache\Cache_Tags;
 
 /**
- * Akamai_Purge is a singleton for managing purge behavior.
+ * Purge is a singleton for managing purge behavior.
  *
  * Lists default purge actions, implements standard business logic and
  * hooks around purges, and fires off purge requests. Based on
  * \Purgely_Purges from the Fastly WP plugin.
  *
  * @since   0.7.0
- * @package Akamai\WordPress
+ * @package Akamai\WordPress\Purge
  */
-class Akamai_Purge {
+class Purge {
 
     /**
-     * The one instance of Akamai_Purge.
+     * The one instance of Purge.
      *
      * @since 0.7.0
-     * @var   Akamai_Purge
+     * @var   Purge
      */
     private static $instance;
 
     /**
-     * Instantiate or return the one Akamai_Purge instance.
+     * Instantiate or return the one Purge instance.
      *
      * @since  0.7.0
-     * @param  string       $akamai The Akamai class instance.
-     * @return Akamai_Purge The created instance.
+     * @param  string $plugin The Plugin class instance.
+     * @return Purge  The created instance.
      */
-    public static function instance( $akamai ) {
+    public static function instance( $plugin ) {
         if ( is_null( self::$instance ) ) {
-            self::$instance = new self( $akamai );
+            self::$instance = new self( $plugin );
         }
         return self::$instance;
     }
@@ -50,7 +53,7 @@ class Akamai_Purge {
      *
      * @since  0.7.0
      * @access protected
-     * @param  string $plugin The Akamai Plugin class instance.
+     * @param  string $plugin The Plugin class instance.
      */
     protected function __construct( $plugin ) {
         $this->plugin = $plugin;
@@ -104,7 +107,7 @@ class Akamai_Purge {
 
         // Generate objects to query. TODO: break out, switch on purge method.
         $cache_tags =
-            Akamai_Cache_Tags::instance( $this->plugin )->get_tags_for_purge_post( $post_id );
+            Cache_Tags::instance( $this->plugin )->get_tags_for_purge_post( $post_id );
         $purge_info = [
             'action'      => $action,
             'target-type' => 'post-' . get_post_type( $post_id ),
@@ -119,7 +122,7 @@ class Akamai_Purge {
 
         do_action( 'akamai_to_purge', ...$purge_params );
         do_action( 'akamai_to_purge_post', ...$purge_params );
-        $client = new Akamai_Purge_Request(
+        $client = new Purge\Request(
             $this->plugin->get_edge_auth_client(),
             $this->plugin->get_user_agent()
         );
@@ -199,7 +202,7 @@ class Akamai_Purge {
             ?>
             <div class="error notice is-dismissible">
                 <p>
-                    <img src="<?= Akamai_Admin::get_icon(); ?>"
+                    <img src="<?= Admin::get_icon(); ?>"
                          style="height: 1em" alt="Akamai for WordPress">&nbsp;
                     <?php esc_html_e(
                         'Akamai: unable to purge cache: ' .
@@ -212,7 +215,7 @@ class Akamai_Purge {
             ?>
             <div class="updated notice notice-success is-dismissible">
                 <p>
-                    <img src="<?= Akamai_Admin::get_icon(); ?>"
+                    <img src="<?= Admin::get_icon(); ?>"
                          style="height: 1em" alt="Akamai for WordPress">&nbsp;
                     <?php esc_html_e(
                         'Akamai: all related cache objects successfully purged.',

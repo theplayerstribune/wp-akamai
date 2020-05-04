@@ -1,9 +1,9 @@
 <?php
 
-namespace Akamai\WordPress;
+namespace Akamai\WordPress\Cache;
 
 /**
- * Akamai_Cache_Tags is a singleton for managing cache tag behavior.
+ * Cache_Tags is a singleton for managing cache tag behavior.
  *
  * Handles basic rules for generating cache tags (ie surrogate keys), and
  * determining which tags are relevant to (emitted as headers or sent in a purge
@@ -16,15 +16,15 @@ namespace Akamai\WordPress;
  *   - get_tags_for_purge_author( ??? ) : [string]
  *
  * @since   0.7.0
- * @package Akamai\WordPress
+ * @package Akamai\WordPress\Cache
  */
-class Akamai_Cache_Tags {
+class Cache_Tags {
 
     /**
-     * The one instance of Akamai_Cache_Tags.
+     * The one instance of Cache_Tags.
      *
      * @since 0.7.0
-     * @var   Akamai_Cache_Tags
+     * @var   Cache_Tags
      */
     private static $instance;
 
@@ -56,11 +56,11 @@ class Akamai_Cache_Tags {
     ];
 
     /**
-     * Instantiate or return the one Akamai_Cache_Tags instance.
+     * Instantiate or return the one Cache_Tags instance.
      *
      * @since  0.7.0
-     * @param  string $plugin The Akamai Plugin class instance.
-     * @return Akamai_Cache_Tags
+     * @param  string     $plugin The Plugin class instance.
+     * @return Cache_Tags The created instance.
      */
     public static function instance( $plugin ) {
         if ( is_null( self::$instance ) ) {

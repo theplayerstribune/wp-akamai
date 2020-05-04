@@ -1,21 +1,22 @@
 <?php
 
-namespace Akamai\WordPress;
+namespace Akamai\WordPress\Purge;
 
 use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
 
 /**
- * Akamai_Purge_Request implements purge actions. It issues purge requests for a
- * given resource. It will handle purging by individual URL, by "cache tag" (ie
- * surrogate key), and sitewide and multi-site "property" purges.
+ * Request implements purge actions. It issues purge requests for
+ * a given resource. It will handle purging by individual URL, by
+ * "cache tag" (ie surrogate key), and sitewide and multi-site "property"
+ * purges.
  *
- * Inspired by \Purgely_Purge from the Fastly WP plugin, with basic interaction
- * taken from the core plugin class (Akamai).
+ * Inspired by \Purgely_Purge from the Fastly WP plugin, with basic
+ * interaction taken from the core plugin class (Akamai).
  *
  * @since   0.7.0
- * @package Akamai\WordPress
+ * @package Akamai\WordPress\Purge
  */
-class Akamai_Purge_Request {
+class Request {
 
     /**
      * Takes some information (either a WP response array only, or a specific
@@ -251,7 +252,7 @@ class Akamai_Purge_Request {
         if ( $log_purges ) {
             error_log(
                 print_r(
-                    [ 'AKAMAI_PLUGIN_INTERNAL: purge_response' => $response ],
+                    [ 'AKAMAI_PLUGIN_INTERNAL: creds_verify_response' => $response ],
                     true
                 )
             );

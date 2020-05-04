@@ -5,7 +5,7 @@ namespace Akamai\WordPress;
 use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
 
 /**
- * Akamai is the core plugin class.
+ * Plugin is the core plugin class.
  *
  * This is used to define internationalization, admin-specific hooks, and
  * public-facing site hooks.
@@ -13,11 +13,11 @@ use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
  * Also maintains the unique identifier of this plugin as well as the current
  * version of the plugin.
  *
- * @since      0.1.0
- * @package    Akamai\WordPress
- * @author     Davey Shafik <dshafik@akamai.com>
+ * @since   0.1.0
+ * @package Akamai\WordPress
+ * @author  Davey Shafik <dshafik@akamai.com>
  */
-class Akamai {
+class Plugin {
 
     /**
      * The unique identifier of the plugin.
@@ -57,8 +57,7 @@ class Akamai {
      * that power the plugin.
      *
      * @since 0.1.0
-     * @var   Akamai_Loader $loader Maintains and registers all hooks for the
-     *                      plugin.
+     * @var   Loader $loader Maintains and registers all hooks for the plugin.
      */
     public $loader;
 
@@ -66,7 +65,7 @@ class Akamai {
      * A reference to the admin class instance.
      *
      * @since  0.7.0
-     * @var    Akamai_Admin $admin The admin class instance.
+     * @var    Admin $admin The admin class instance.
      */
     public $admin;
 
@@ -74,7 +73,7 @@ class Akamai {
      * A reference to the purge class instance.
      *
      * @since  0.7.0
-     * @var    Akamai_Purge $purge The purge class instance.
+     * @var    Purge $purge The purge class instance.
      */
     public $purge;
 
@@ -129,9 +128,9 @@ class Akamai {
             plugin_dir_path( __DIR__ ) . $this->name . '.php' );
 
         $this->load_dependencies();
-        $this->loader = new Akamai_Loader();
-        $this->admin = Akamai_Admin::instance( $this );
-        $this->purge = Akamai_Purge::instance( $this );
+        $this->loader = new Loader();
+        $this->admin = Admin\Admin::instance( $this );
+        $this->purge = Purge\Purge::instance( $this );
 
         $this->define_admin_hooks();
     }
@@ -146,11 +145,11 @@ class Akamai {
      * @access private
      */
     private function load_dependencies() {
-        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-akamai-loader.php';
-        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-akamai-purge.php';
-        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-akamai-purge-request.php';
-        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-akamai-cache-tags.php';
-        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-akamai-admin.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/class-loader.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-purge.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-request.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-tags.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-admin.php';
     }
 
     /**
@@ -188,7 +187,7 @@ class Akamai {
         );
 
         // Purging Actions/Hooks.
-        // TODO: move the hooks defined in Akamai_Purge here.
+        // TODO: move the hooks defined in Purge\Purge here.
         $this->loader->add_action(
             'admin_notices', $this->purge, 'display_purge_notices' );
     }
@@ -331,7 +330,7 @@ class Akamai {
         if ( isset( $settings['credentials'] ) ) {
             $credentials = $settings['credentials'];
         }
-        $client = new Akamai_Purge_Request(
+        $client = new Purge\Request(
             $this->get_edge_auth_client( $credentials ),
             $this->get_user_agent()
         );
