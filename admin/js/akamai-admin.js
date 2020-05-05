@@ -116,19 +116,19 @@
 
                 if (response.success) {
                     verificationNotices.add({
-                        id: `verify-creds-success-${getRandomNumbers()}`,
+                        id: `akamai-notice-${getRandomNumbers()}`,
                         type: 'success',
                         message: 'Credentials verified successfully.',
                     });
                 } else if (response.error) {
                     verificationNotices.add({
-                        id: `verify-creds-error-${getRandomNumbers()}`,
+                        id: `akamai-notice-${getRandomNumbers()}`,
                         type: 'error',
                         message: response.error,
                     });
                 } else {
                     verificationNotices.add({
-                        id: `verify-creds-error-${getRandomNumbers()}`,
+                        id: `akamai-notice-${getRandomNumbers()}`,
                         type: 'error',
                         message: 'An unexpected error occurred.',
                     });
@@ -141,7 +141,7 @@
                 $('#verify-creds-spinner').hide();
 
                 verificationNotices.add({
-                    id: `verify-creds-error-${getRandomNumbers()}`,
+                    id: `akamai-notice-${getRandomNumbers()}`,
                     type: 'error',
                     message: 'An unexpected error occurred: ' + error,
                 });

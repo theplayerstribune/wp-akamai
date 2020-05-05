@@ -150,6 +150,7 @@ class Plugin {
         require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-request.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-tags.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-admin.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-notice.php';
     }
 
     /**

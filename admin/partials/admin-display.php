@@ -150,13 +150,13 @@
                                    <?php checked( $this->plugin->setting( 'log-errors' ), '0' ); ?>
                                    value="0">
                             <label for="<?= $this->name() ?>-log-errors-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description">Log all admin/settings/cache/purge errors, updates and events in
-                            <code>error_log()</code> as well as showing notices.</p>
+                            <p class="description">Log all errors for settings, cache headers, and purges in
+                            <code>error_log()</code> (as well as showing notices).</p>
                         </td>
                     </tr>
                     <tr>
                         <th scope="row">
-                            <?php _e( 'Debug mode: log purges', $this->name() ); ?>
+                            <?php _e( 'Debug mode: log requests', $this->name() ); ?>
                         </th>
                         <td>
                             <input type="radio" id="<?= $this->name() ?>-log-purges-yes"
@@ -170,8 +170,8 @@
                                    <?php checked( $this->plugin->setting( 'log-purges' ), '0' ); ?>
                                    value="0">
                             <label for="<?= $this->name() ?>-log-purges-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description">Log successful purge events and responses in
-                            <code>error_log()</code> as well as showing notices.</p>
+                            <p class="description">Log all purge and verification requests and responses in
+                            <code>error_log()</code> (as well as showing notices).</p>
                         </td>
                     </tr>
                     </tbody>

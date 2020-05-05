@@ -3,6 +3,7 @@
 namespace Akamai\WordPress\Purge;
 
 use \Akamai\WordPress\Admin\Admin;
+use \Akamai\WordPress\Admin\Notice;
 use \Akamai\WordPress\Cache\Cache_Tags;
 
 /**
@@ -122,7 +123,7 @@ class Purge {
 
         do_action( 'akamai_to_purge', ...$purge_params );
         do_action( 'akamai_to_purge_post', ...$purge_params );
-        $client = new Purge\Request(
+        $client = new Request(
             $this->plugin->get_edge_auth_client(),
             $this->plugin->get_user_agent()
         );
@@ -133,9 +134,15 @@ class Purge {
         do_action( 'akamai_purged_post', $response, ...$purge_params );
 
         if ( $response['error'] ) {
+            $instance = $this; // Be nice, support PHP 5.
             add_filter(
                 'redirect_post_location',
-                [ $this, 'add_error_query_arg' ],
+                function( $location ) use ( $response, $instance ) {
+                    return $instance->add_error_query_arg(
+                        $location,
+                        $response
+                    );
+                },
                 100
             );
         } else {
@@ -199,30 +206,19 @@ class Purge {
      */
     public function display_purge_notices() {
         if ( isset( $_GET['akamai-cache-purge-error'] ) ) {
-            ?>
-            <div class="error notice is-dismissible">
-                <p>
-                    <img src="<?= Admin::get_icon(); ?>"
-                         style="height: 1em" alt="Akamai for WordPress">&nbsp;
-                    <?php esc_html_e(
-                        'Akamai: unable to purge cache: ' .
-                        $_GET['akamai-cache-purge-error'], 'akamai' ); ?>
-                </p>
-            </div>
-            <?php
+            Notice::display(
+                $message = 'Unable to purge cache: ' .
+                           $_GET['akamai-cache-purge-error'],
+                $classes = [ 'error', 'purge' ],
+                $id = 'cache-purge-error',
+                $force_log = $this->plugin->setting( 'log-errors' )
+            );
         }
         if ( isset( $_GET['akamai-cache-purge-success'] ) ) {
-            ?>
-            <div class="updated notice notice-success is-dismissible">
-                <p>
-                    <img src="<?= Admin::get_icon(); ?>"
-                         style="height: 1em" alt="Akamai for WordPress">&nbsp;
-                    <?php esc_html_e(
-                        'Akamai: all related cache objects successfully purged.',
-                        'akamai' ); ?>
-                </p>
-            </div>
-            <?php
+            Notice::display(
+                $message = 'Post and all related cache objects purged.',
+                $classes = [ 'purge', 'updated' ]
+            );
         }
     }
 

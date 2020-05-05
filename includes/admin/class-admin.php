@@ -3,6 +3,7 @@
 namespace Akamai\WordPress\Admin;
 
 use \Akamai\Open\EdgeGrid\Authentication as Akamai_Auth;
+use \Akamai\Wordpress\Purge;
 
 /**
  * Admin is a singleton class that handles admin-specific
@@ -268,14 +269,12 @@ class Admin {
     public function add_settings_error(
         $code, $message, $type = 'error', $force_debug = false ) {
         if ( $this->plugin->setting( 'log-errors' ) || $force_debug ) {
-            $payload = [
-                'error' => "setting-error:$code",
-                'message' => $message
-            ];
-            if ( $type !== 'error' ) {
-                $payload['type'] = $type;
-            }
-            error_log( print_r( $payload, true ) );
+            // Let add_settings_error() handle displaying the notice.
+            Notice::log(
+                $message = $message,
+                $classes = [ $type ],
+                $id = "settings-{$type}:{$code}"
+            );
         }
         add_settings_error( $this->name(), $code, $message, $type );
     }
