@@ -7,10 +7,6 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.akamai-content .wrap {
-    padding-left: 14px;
-}
-
 .akamai-content header {
     position: relative;
     margin: 0;
@@ -22,15 +18,6 @@
     background-color: #133947;
     background-repeat: no-repeat;
     background-position: 0 15px;
-}
-
-.akamai-content span.akamai-plugin-version {
-    position: absolute;
-    bottom: 12px;
-    display: inline-block;
-    color: white;
-    padding-left: 14px;
-    font-size: larger;
 }
 
 .akamai-content header h1 {
@@ -53,4 +40,25 @@
     .akamai-content header {
         background-image: url(../../assets/banner-4632x1500.jpg);
     }
+}
+
+.akamai-content .wrap {
+    padding-left: 14px;
+}
+
+.akamai-content span.akamai-plugin-version {
+    position: absolute;
+    bottom: 12px;
+    display: inline-block;
+    color: white;
+    padding-left: 14px;
+    font-size: larger;
+}
+
+.akamai-notice.has-code p {
+    line-height: 1.75;
+}
+
+.akamai-notice.has-code code {
+    font-size: 12px;
 }

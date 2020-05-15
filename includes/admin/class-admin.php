@@ -18,6 +18,7 @@ use \Akamai\Wordpress\Purge;
  * @author  Davey Shafik <dshafik@akamai.com>
  */
 class Admin {
+    use \Akamai\WordPress\Hook_Loader;
 
     /**
      * The one instance of Admin.
@@ -91,7 +92,29 @@ class Admin {
      */
     protected function __construct( $plugin ) {
         $this->menu_page_id = "toplevel_page_{$plugin->name}";
-        $this->plugin       = $plugin;
+        $this->plugin = $plugin;
+
+        $this->action_hooks = [
+            [ 'admin_enqueue_scripts', [ $this, 'enqueue_styles' ] ],
+            [ 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] ],
+            [ 'admin_menu', [ $this, 'add_plugin_admin_menu' ] ],
+
+            // Save/update plugin options; load error msgs on settings.
+            [ 'admin_init', [ $this, 'settings_update' ] ],
+            [ "load-{$this->menu_page_id}", [ $this, 'settings_load' ] ],
+
+            // Validate Credentials AJAX.
+            [
+                'wp_ajax_akamai_verify_credentials',
+                [ $this, 'handle_verify_credentials_request' ],
+            ],
+        ];
+        $this->filter_hooks = [
+            [
+                "plugin_action_links_{$plugin->basename}",
+                [ $this, 'add_action_links' ],
+            ]
+        ];
     }
 
     /**
@@ -293,9 +316,21 @@ class Admin {
      * @return array  The complete, current Akamai settings array.
      */
     public function validate( $new_settings = [], $verify_creds = true ) {
+        /**
+         * Filter: akamai_settings_to_validate
+         *
+         * @since 0.7.0
+         * @param array $settings The updated list of settings sent in
+         *              the POST request. The returned list is forwarded
+         *              to validation..
+         * @param Admin $admin The admin singleton instance, which you
+         *              can use to set your own, custom errors, warnings
+         *              or notices.
+         */
         $settings = apply_filters(
             'akamai_settings_to_validate',
-            $this->plugin->get_settings( $new_settings )
+            $this->plugin->get_settings( $new_settings ),
+            $this::$instance
         );
 
         $log_errors = $this->plugin->setting( 'log-errors', $settings );

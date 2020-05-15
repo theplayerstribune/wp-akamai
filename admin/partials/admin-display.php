@@ -123,7 +123,7 @@
                     <tr>
                         <th scope="row">
                             <label for="<?= $this->name() ?>-hostname">
-                                <?php _e( 'Public Hostname', $this->name() ); ?>
+                                <?php _e( 'Public Hostname (with Scheme)', $this->name() ); ?>
                             </label>
                         </th>
                         <td>
@@ -132,6 +132,26 @@
                                    value="<?= $this->plugin->setting( 'hostname' ) ?>"
                                    class="regular-text"/>
                             <p class="description">Public hostname for this site. <strong>Used only for purging by URL.</strong></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
+                            <?php _e( 'Debug mode: add tags to notices', $this->name() ); ?>
+                        </th>
+                        <td>
+                            <input type="radio" id="<?= $this->name() ?>-add-tags-to-notices-yes"
+                                   name="<?= $this->name() ?>[add-tags-to-notices]"
+                                   <?php checked( $this->plugin->setting( 'add-tags-to-notices' ), '1' ); ?>
+                                   value="1">
+                            <label for="<?= $this->name(); ?>-add-tags-to-notices-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
+                            &nbsp;
+                            <input type="radio" id="<?= $this->name() ?>-add-tags-to-notices-no"
+                                   name="<?= $this->name() ?>[add-tags-to-notices]"
+                                   <?php checked( $this->plugin->setting( 'add-tags-to-notices' ), '0' ); ?>
+                                   value="0">
+                            <label for="<?= $this->name() ?>-add-tags-to-notices-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
+                            <p class="description">Include cache tags (if any) that are being purged to the success notices
+                            after an update.</p>
                         </td>
                     </tr>
                     <tr>
@@ -177,110 +197,104 @@
                     </tbody>
                 </table>
 
-                <h1><span><?php esc_attr_e( 'Cache Options', 'wp_admin_style' ); ?></span> <em style="color: #A0A5AA">(Not Implemented)</em></h1>
-                <p style="color: #A0A5AA">Many of these can be set in the Akamai CDN property manager, but the
+                <h1><span><?php esc_attr_e( 'Cache Options', 'wp_admin_style' ); ?></span></h1>
+                <p>Many of these can be set in the Akamai CDN property manager, but the
                 behaviors can also pass thru origin headers or even set their rules based on origin headers.</p>
 
-                <h3><span style="color: #A0A5AA"><?php esc_attr_e( 'General Cache Options', 'wp_admin_style' ); ?></span></h3>
-                <p style="color: #A0A5AA">These settings apply to how the plugin handles caching, revalidation, errors
+                <h3><span><?php esc_attr_e( 'General Cache Options', 'wp_admin_style' ); ?></span></h3>
+                <p>These settings apply to how the plugin handles caching, revalidation, errors
                 and serving stale content; TTLs; and what cache information is emitted (if any) from the front end of
                 the site.</p>
 
                 <table class="form-table">
                     <tbody>
                     <tr>
-                        <th scope="row" style="color: #A0A5AA">
+                        <th scope="row">
                             <?php _e( 'Emit Cache Headers', $this->name() ); ?>
                         </th>
                         <td>
                             <input type="radio" id="<?php echo $this->name(); ?>-emit-cache-control-yes"
                                    name="<?php echo $this->name(); ?>[emit-cache-control]"
-                                   <?php checked( null, '1' ); ?>
-                                   value="1"
-                                   disabled>
+                                   <?php checked( $this->plugin->setting( 'emit-cache-control' ), '1' ); ?>
+                                   value="1">
                             <label for="<?php echo $this->name(); ?>-emit-cache-control-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
                             &nbsp;
                             <input type="radio" id="<?php echo $this->name(); ?>-emit-cache-control-no"
                                    name="<?php echo $this->name(); ?>[emit-cache-control]"
-                                   <?php checked( '0', '0' ); ?>
-                                   value="0"
-                                   disabled>
+                                   <?php checked( $this->plugin->setting( 'emit-cache-control' ), '0' ); ?>
+                                   value="0">
                             <label for="<?php echo $this->name(); ?>-emit-cache-control-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description" style="color: #A0A5AA">Uses the <code>Cache-Control: …</code> header.</p>
+                            <p class="description">Uses the <code>Cache-Control: …</code> header.</p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row" style="color: #A0A5AA">
-                            <label for="<?= $this->name() ?>-cache-default-headers">
+                        <th scope="row">
+                            <label for="<?= $this->name() ?>-cache-default-header">
                                 <?php _e( 'Default Cache Header', $this->name() ); ?>
                             </label>
                         </th>
                         <td>
-                            <input type="text" id="<?= $this->name() ?>-cache-default-headers"
-                                   name="<?= $this->name() ?>[cache-default-headers]"
-                                   value="<?= $this->plugin->setting( 'cache-default-headers' ) ?>"
+                            <input type="text" id="<?= $this->name() ?>-cache-default-header"
+                                   name="<?= $this->name() ?>[cache-default-header]"
+                                   value="<?= $this->plugin->setting( 'cache-default-header' ) ?>"
                                    class="regular-text code"
-                                   spellcheck="false"
-                                   disabled/>
-                            <p class="description" style="color: #A0A5AA">Default <code>Cache-Control: …</code> header
-                            to emit. This can be filtered according to the template being served.</p>
+                                   spellcheck="false"/>
+                            <p class="description">Default <code>Cache-Control: …</code> header
+                            to emit. This can be filtered according to the page being served. For details, see
+                            <a href="https://github.com/theplayerstribune/wp-akamai/wiki/Purging">the Wiki documentation</a>.</p>
                         </td>
                     </tr>
                     </tbody>
                 </table>
 
-                <h3><span style="color: #A0A5AA"><?php esc_attr_e( 'Cache Tags', 'wp_admin_style' ); ?></span></h3>
-                <p style="color: #A0A5AA">Here you can set the specific types and the breadth of tags that are generated
+                <h3><span><?php esc_attr_e( 'Cache Tags', 'wp_admin_style' ); ?></span></h3>
+                <p>Here you can set the specific types and the breadth of tags that are generated
                 for a specific post, term or user. Currently we default to a maximal setting.</p>
 
                 <table class="form-table">
                     <tbody>
                     <tr>
-                        <th scope="row" style="color: #A0A5AA">
+                        <th scope="row">
                             <?php _e( 'Emit Cache Tags (Surrogate Keys)', $this->name() ); ?>
                         </th>
                         <td>
                             <input type="radio" id="<?php echo $this->name(); ?>-emit-cache-tags-yes"
                                    name="<?php echo $this->name(); ?>[emit-cache-tags]"
                                    <?php checked( $this->plugin->setting( 'emit-cache-tags' ), '1' ); ?>
-                                   value="1"
-                                   disabled>
+                                   value="1">
                             <label for="<?php echo $this->name(); ?>-emit-cache-tags-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
                             &nbsp;
                             <input type="radio" id="<?php echo $this->name(); ?>-emit-cache-tags-no"
                                    name="<?php echo $this->name(); ?>[emit-cache-tags]"
                                    <?php checked( $this->plugin->setting( 'emit-cache-tags' ), '0' ); ?>
-                                   value="0"
-                                   disabled>
+                                   value="0">
                             <label for="<?php echo $this->name(); ?>-emit-cache-tags-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description" style="color: #A0A5AA">Uses the <code>Edge-Cache-Tag: …</code>
+                            <p class="description">Uses the <code>Edge-Cache-Tag: …</code>
                             header. Will always include a site tag (for purging an entire site), and may include other
                             default tags (for the template, or specific page, or other metadata as defined by the
                             user.</p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row" style="color: #A0A5AA">
+                        <th scope="row">
                             <?php _e( 'Emit Tags for Related Objects', $this->name() ); ?>
                         </th>
                         <td>
                             <input type="radio" id="<?php echo $this->name(); ?>-cache-related-tags-yes"
                                    name="<?php echo $this->name(); ?>[cache-related-tags]"
                                    <?php checked( $this->plugin->setting( 'cache-related-tags' ), '1' ); ?>
-                                   value="1"
-                                   disabled>
+                                   value="1">
                             <label for="<?php echo $this->name(); ?>-cache-related-tags-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
                             &nbsp;
                             <input type="radio" id="<?php echo $this->name(); ?>-cache-related-tags-no"
                                    name="<?php echo $this->name(); ?>[cache-related-tags]"
                                    <?php checked( $this->plugin->setting( 'cache-related-tags' ), '0' ); ?>
-                                   value="0"
-                                   disabled>
+                                   value="0">
                             <label for="<?php echo $this->name(); ?>-cache-related-tags-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
-                            <p class="description" style="color: #A0A5AA">Include tags for related objects (posts,
+                            <p class="description">Include tags for related objects (posts,
                             terms, users/authors and archives or template pages) along with the displayed item. For a
                             list of what these are, and how to add/remove related objects with filter hooks, see
-                            <a href="https://github.com/theplayerstribune/wp-akamai/wiki/Purging">the Wiki documentation</a></p>
+                            <a href="https://github.com/theplayerstribune/wp-akamai/wiki/Purging">the Wiki documentation</a>.</p>
                         </td>
                     </tr>
                     </tbody>
@@ -296,6 +310,28 @@
 
                 <table class="form-table">
                     <tbody>
+                    <tr>
+                        <th scope="row">
+                            <label for="<?php echo $this->name(); ?>-purge-on-update">
+                                <?php _e( 'Purge on Update', $this->name() ); ?>
+                            </label>
+                        </th>
+                        <td>
+                            <input type="radio" id="<?php echo $this->name(); ?>-purge-on-update-yes"
+                                   name="<?php echo $this->name(); ?>[purge-on-update]"
+                                   <?php checked( $this->plugin->setting( 'purge-on-update' ), '1' ); ?>
+                                   value="1">
+                            <label for="<?php echo $this->name(); ?>-purge-on-update-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
+                            &nbsp;
+                            <input type="radio" id="<?php echo $this->name(); ?>-purge-on-update-no"
+                                   name="<?php echo $this->name(); ?>[purge-on-update]"
+                                   <?php checked( $this->plugin->setting( 'purge-on-update' ), '0' ); ?>
+                                   value="0">
+                            <label for="<?php echo $this->name(); ?>-purge-on-update-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
+                            <p class="description">When an object in WordPress (a post, term, or user) is updated, trigger a purge
+                            according to the settings below. If you are actively caching with Akamai, this should be on.</p>
+                        </td>
+                    </tr>
                     <tr>
                         <th scope="row">
                             <label for="<?= $this->name() ?>-purge-network">
@@ -451,6 +487,21 @@
                     </tr>
                     </tbody>
                 </table>
+
+                <?php
+                /**
+                 * Action: akamai_settings_page_template
+                 *
+                 * More "settings" can be added here, and then handled
+                 * in the akamai_settings_to_validate filter.
+                 *
+                 * @since 0.7.0
+                 * @param Admin $admin he admin singleton instance,
+                 *              which you can use to reference the inner
+                 *              workings of the plugin.
+                 */
+                do_action( 'akamai_settings_page_template', $this );
+                ?>
 
                 <?php submit_button( 'Save settings', 'primary', 'submit', false ); ?>
             </form>

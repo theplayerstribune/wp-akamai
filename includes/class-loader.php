@@ -52,22 +52,18 @@ class Loader {
      *
      * @param string $hook The name of the WordPress action that is
      *               being registered.
-     * @param object $component A reference to the instance of the
-     *               object on which the action is defined.
-     * @param string $callback The name of the function definition on
-     *               the $component.
+     * @param mixed  $callable The callable to run on the hook.
      * @param int    $priority Optional: hook priority. Default is 10.
      * @param int    $accepted_args Optional: arguments passed to the
      *               $callback. Default is 1.
      */
     public function add_action(
-        $hook, $component, $callback, $priority = 10, $accepted_args = 1 ) {
+        $hook, $callable, $priority = 10, $accepted_args = 1 ) {
 
         $this->actions = $this->add(
             $this->actions,
             $hook,
-            $component,
-            $callback,
+            $callable,
             $priority,
             $accepted_args
         );
@@ -80,22 +76,18 @@ class Loader {
      *
      * @param string $hook The name of the WordPress filter that is
      *               being registered.
-     * @param object $component A reference to the instance of the
-     *               object on which the action is defined.
-     * @param string $callback The name of the function definition on
-     *               the $component.
+     * @param mixed  $callable The callable to run on the hook.
      * @param int    $priority Optional: hook priority. Default is 10.
      * @param int    $accepted_args Optional: arguments passed to the
      *               $callback. Default is 1.
      */
     public function add_filter(
-        $hook, $component, $callback, $priority = 10, $accepted_args = 1 ) {
+        $hook, $callable, $priority = 10, $accepted_args = 1 ) {
 
         $this->filters = $this->add(
             $this->filters,
             $hook,
-            $component,
-            $callback,
+            $callable,
             $priority,
             $accepted_args
         );
@@ -112,10 +104,7 @@ class Loader {
      *                registered (that is, actions or filters).
      * @param  string $hook The name of the WordPress action that is
      *                being registered.
-     * @param  object $component A reference to the instance of the
-     *                object on which the action is defined.
-     * @param  string $callback The name of the function definition on
-     *                the $component.
+     * @param  mixed  $callable The callable to run on the hook.
      * @param  int    $priority Optional: hook priority. Default is 10.
      * @param  int    $accepted_args Optional: arguments passed to the
      *                $callback. Default is 1.
@@ -124,12 +113,11 @@ class Loader {
      *                with WordPress.
      */
     private function add(
-        $hooks, $hook, $component, $callback, $priority, $accepted_args ) {
+        $hooks, $hook, $callable, $priority, $accepted_args ) {
 
         $hooks[] = [
             'hook'          => $hook,
-            'component'     => $component,
-            'callback'      => $callback,
+            'callable'      => $callable,
             'priority'      => $priority,
             'accepted_args' => $accepted_args
         ];
@@ -147,7 +135,7 @@ class Loader {
         foreach ( $this->filters as $hook ) {
             add_filter(
                 $hook['hook'],
-                [ $hook['component'], $hook['callback'] ],
+                $hook['callable'],
                 $hook['priority'],
                 $hook['accepted_args']
             );
@@ -155,10 +143,11 @@ class Loader {
         foreach ( $this->actions as $hook ) {
             add_action(
                 $hook['hook'],
-                [ $hook['component'], $hook['callback'] ],
+                $hook['callable'],
                 $hook['priority'],
                 $hook['accepted_args']
             );
         }
+
     }
 }

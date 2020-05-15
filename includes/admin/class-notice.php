@@ -253,7 +253,7 @@ class Notice {
             ? ' ' . implode( ' ', $this->classes )
             : '';
         $is_dismissible = $this->dismissible() ? ' is-dismissible' : '';
-        return "notice notice-{$type}{$class_list}{$is_dismissible}";
+        return "notice akamai-notice notice-{$type}{$class_list}{$is_dismissible}";
     }
 
     /**

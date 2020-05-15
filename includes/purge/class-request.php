@@ -24,6 +24,8 @@ class Request {
      * that consumers of the API can make simple assumptions about what to do
      * with the result.
      *
+     * TODO: upgrade to a class: Akamai\WordPress\Purge\Response.
+     *
      * @since  0.7.0
      * @param  array       $wp_response A WP response array.
      * @param  bool        $success Optional. Specifically set response outcome.
@@ -146,12 +148,20 @@ class Request {
     /**
      * Send a purge request to the Fast Purge v3 API!
      *
-     * @param  array $options An Akamai settings array subset of options to set
-     *               in the request.
-     * @param  array $objects The list of "objects" to purge from the cache.
-     * @return array A normalized Akamai API response.
+     * @param  string $method The purge method (tags, URL, CP code, &c).
+     * @param  string $path The API request path, which combines the
+     *                purge method, network, and type (invalidate!).
+     * @param  array  $objects An array of "objects" to purge. These are
+     *                cache tags when purging by tag, paths when purging
+     *                by URL, codes when purging by CP code, keys when
+     *                purging by key.
+     * @param  string $hostname Optional. The hostname to use when
+     *                purging by URL. Defaults to an empty string, which
+     *                is fine unless we are, in fact, purgin by URL, in
+     *                which case it raises an error.
+     * @return array  A normalized Akamai API response.
      */
-    public function purge( $options, $objects ) {
+    public function purge( $method, $path, $objects, $hostname = '' ) {
         if ( ! ( $this->auth instanceof Akamai_Auth ) ) {
             return static::normalize_response(
                 $wp_response = null,
@@ -160,31 +170,14 @@ class Request {
             );
         }
 
-        // Fall back on defaults instead of erroring.
-        $type = isset( $options['purge-type'] )
-            ? $options['purge-type']
-            : 'invalidate';
-        $method = isset( $options['purge-method'] )
-            ? $options['purge-method']
-            : 'url';
-        $network = isset( $options['purge-network'] )
-            ? $options['purge-network']
-            : 'staging';
-        $version = isset( $options['version'] )
-            ? $options['version']
-            : '-';
-
-        // Transition setting values to actual sent values.
-        if ( 'all' === $network ) {
-            $network = '';
-        }
-        if ( 'arl' === $method ) {
-            $method = 'url';
-        }
-
         $body = [ 'objects' => $objects ];
+
+        // NOTE: this handles the case of a purge by URL method, which
+        // is not implemented yet in purge by update, not by direct
+        // purges in the menu. But including it makes it much, much
+        // easier to "turn on" the direct purge by url, so it stays.
         if ( 'url' === $method ) {
-            if ( ! isset( $options['hostname'] ) ) {
+            if ( empty( $hostname ) ) {
                 // TODO: class Akamai\WP_Plugin\Exception extends \Exception {},
                 //       appends AKAMAI_PLUGIN_INTERNAL: ...
                 throw new \Exception(
@@ -192,12 +185,12 @@ class Request {
                     'can not create URL purge request without hostname'
                 );
             }
-            $body['hostname'] = $options['hostname'];
+            $body['hostname'] = $hostname;
         }
         $body_json = wp_json_encode( $body );
 
         $this->auth->setHttpMethod( 'POST' );
-        $this->auth->setPath( "/ccu/v3/$type/$method/$network" );
+        $this->auth->setPath( $path );
         $this->auth->setBody( $body_json );
         $request = $this->wp_request_from_auth();
 

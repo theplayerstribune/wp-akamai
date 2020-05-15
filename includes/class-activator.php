@@ -19,7 +19,7 @@ class Activator {
      * @since    0.1.0
      */
     public static function activate() {
-        add_option( 'akamai-version', Akamai::$version );
+        add_option( 'akamai-version', Plugin::$version );
     }
 
 }
