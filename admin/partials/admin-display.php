@@ -136,6 +136,26 @@
                     </tr>
                     <tr>
                         <th scope="row">
+                            <?php _e( 'Debug mode: add tags to notices', $this->name() ); ?>
+                        </th>
+                        <td>
+                            <input type="radio" id="<?= $this->name() ?>-add-tags-to-notices-yes"
+                                   name="<?= $this->name() ?>[add-tags-to-notices]"
+                                   <?php checked( $this->plugin->setting( 'add-tags-to-notices' ), '1' ); ?>
+                                   value="1">
+                            <label for="<?= $this->name(); ?>-add-tags-to-notices-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
+                            &nbsp;
+                            <input type="radio" id="<?= $this->name() ?>-add-tags-to-notices-no"
+                                   name="<?= $this->name() ?>[add-tags-to-notices]"
+                                   <?php checked( $this->plugin->setting( 'add-tags-to-notices' ), '0' ); ?>
+                                   value="0">
+                            <label for="<?= $this->name() ?>-add-tags-to-notices-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
+                            <p class="description">Include cache tags (if any) that are being purged to the success notices
+                            after an update.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
                             <?php _e( 'Debug mode: log errors', $this->name() ); ?>
                         </th>
                         <td>

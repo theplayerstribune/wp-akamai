@@ -85,7 +85,7 @@ class Purge {
     }
 
     /**
-     * Callback for post changing events to trigger purges. THIS IS A WIP.
+     * Callback for post-change events to trigger purges.
      *
      * @since 0.7.0
      * @param int    $post_id The post ID for the triggered post.
@@ -133,30 +133,25 @@ class Purge {
         );
         do_action( 'akamai_purged_post', $response, ...$purge_params );
 
-        if ( $response['error'] ) {
-            $instance = $this; // Be nice, support PHP 5.
-            add_filter(
-                'redirect_post_location',
-                function( $location ) use ( $response, $instance ) {
-                    return $instance->add_error_query_arg(
-                        $location,
-                        $response
-                    );
-                },
-                100
-            );
-        } else {
-            add_filter(
-                'redirect_post_location',
-                [ $this, 'add_success_query_arg' ],
-                100
-            );
+        $instance = $this; // Be nice, support PHP 5.
+        add_filter(
+            'redirect_post_location',
+            function( $location ) use ( $response, $instance, $purge_info ) {
+                return $instance->add_notice_query_arg(
+                    $location,
+                    $response,
+                    $purge_info,
+                    'redirect_post_location'
+                );
+            },
+            100
+        );
         }
     }
 
     /**
      * Add query args to set notices and other changes after a submit/update
-     * that triggered a purge. MERGE WITH BELOW.
+     * that triggered a purge.
      *
      * By removing itself after running, it ensures that the hook is run
      * dynamically and once.
@@ -166,36 +161,51 @@ class Purge {
      *                by the filter hook.
      * @param  string $response The HTTP response code of the redirect: passed
      *                in by the filter hook.
-     * @return string
+     * @return array  $purge_info General information about the purge.
+     * @param  string $filter_name The filter this is being fired in, so it can
+     *                then be removed.
      */
-    public function add_error_query_arg( $location, $response ) {
-        remove_filter(
-            'redirect_post_location', [ $this, 'add_error_query_arg' ], 100 );
+    public function add_notice_query_arg(
+        $location, $response, $purge_info, $filter_name ) {
+        remove_filter( $filter_name, [ $this, 'add_notice_query_arg' ], 100 );
+        if ( $response['error'] ) {
+            $message = apply_filters(
+                'akamai_purge_notice_failure',
+                'Unable to purge cache: ' . $response['error']
+            );
+            return add_query_arg(
+                [ 'akamai-cache-purge-error' => urlencode( $message ) ],
+                $location
+            );
+        }
+        $message = 'This object and all related cache objects purged.';
+        if ( $this->plugin->setting( 'add-tags-to-notices' ) ) {
+            $message .= ' ' . $this->format_cache_tags_for_message(
+                $purge_info['cache-tags']
+            );
+        }
+        $message = apply_filters( 'akamai_purge_notice_success', $message );
         return add_query_arg(
-            [ 'akamai-cache-purge-error' => urlencode( $response['error'] ) ],
+            [ 'akamai-cache-purge-success' => urlencode( $message ) ],
             $location
         );
     }
 
     /**
-     * Add query args to set notices and other changes after a submit/update
-     * that triggered a purge. MERGE WITH ABOVE.
+     * Format those cache tags to show to people.
      *
-     * By removing itself after running, it ensures that the hook is run
-     * dynamically and once.
-     *
-     * @since  0.1.0
-     * @param  string $location The Location header of the redirect: passed in
-     *                by the filter hook.
-     * @return string The updated location.
+     * @since  0.7.0
+     * @param  array $cache_tags A list of cache tags to format.
+     * @return string The formatted string representation for HTML.
      */
-    public function add_success_query_arg( $location ) {
-        remove_filter(
-            'redirect_post_location', [ $this, 'add_success_query_arg' ], 100 );
-        return add_query_arg(
-            [ 'akamai-cache-purge-success' => 'true' ],
-            $location
+    public function format_cache_tags_for_message( $cache_tags ) {
+        $f_tags = array_map(
+            function( $tag ) {
+                return "<code>{$tag}</code>";
+            },
+            $cache_tags
         );
+        return 'Purged cache tags include:<br>' . join( ', ', $f_tags );
     }
 
     /**
@@ -207,17 +217,22 @@ class Purge {
     public function display_purge_notices() {
         if ( isset( $_GET['akamai-cache-purge-error'] ) ) {
             Notice::display(
-                $message = 'Unable to purge cache: ' .
-                           $_GET['akamai-cache-purge-error'],
+                $message = $_GET['akamai-cache-purge-error'],
                 $classes = [ 'error', 'purge' ],
-                $id = 'cache-purge-error',
+                $id = 'cache-purge-failure',
                 $force_log = $this->plugin->setting( 'log-errors' )
             );
         }
         if ( isset( $_GET['akamai-cache-purge-success'] ) ) {
+            $message = $_GET['akamai-cache-purge-success'];
+            $classes = [ 'purge', 'updated' ];
+            if ( strpos( $message, '<code>') !== false ) {
+                $classes[] = 'has-code';
+            }
             Notice::display(
-                $message = 'Post and all related cache objects purged.',
-                $classes = [ 'purge', 'updated' ]
+                $message,
+                $classes,
+                $id = 'cache-purge-success'
             );
         }
     }

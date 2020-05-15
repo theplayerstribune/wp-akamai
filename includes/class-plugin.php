@@ -99,6 +99,7 @@ class Plugin {
     public $default_options = [
         // 'hostname'              => ..., // Handled in Akamai::get_settings().
         'unique-sitecode'       => '',
+        'add-tags-to-notices'   => 0,
         'log-errors'            => 0,
         'log-purges'            => 0,
         'emit-cache-headers'    => 0,
