@@ -123,7 +123,7 @@
                     <tr>
                         <th scope="row">
                             <label for="<?= $this->name() ?>-hostname">
-                                <?php _e( 'Public Hostname', $this->name() ); ?>
+                                <?php _e( 'Public Hostname (with Scheme)', $this->name() ); ?>
                             </label>
                         </th>
                         <td>

@@ -227,7 +227,7 @@ class Cache_Tags {
      *
      * @since  0.7.0
      * @param  \WP_Post $post The post to search for related author information.
-     * @return array The author tag(s).
+     * @return array    The author tag(s).
      */
     public function related_author_tags( $post ) {
         if ( is_int( $post ) ) {
@@ -248,6 +248,7 @@ class Cache_Tags {
      *
      * @since  0.7.0
      * @param  \WP_Post $post The post to search for related term information.
+     * @return array    The related term tags.
      */
     public function related_term_tags( $post ) {
         $tags = [];
@@ -257,7 +258,9 @@ class Cache_Tags {
         }
         if ( ! empty( $post ) ) {
             $taxonomies = apply_filters(
-                'akamai_related_taxonomies', (array) get_taxonomies() );
+                'akamai_purge_taxonomies',
+                (array) get_taxonomies()
+            );
 
             foreach ( $taxonomies as $taxonomy ) {
                 $terms = wp_get_post_terms(
@@ -275,6 +278,85 @@ class Cache_Tags {
                 }
             }
         }
+        return $tags;
+    }
+
+    /**
+     * Get all the posts that have this term assigned to them.
+     *
+     * @since  0.7.0
+     * @param  \WP_Term $term The term to search for related posts.
+     * @param  string   $taxonomy Optional. The taxonomy of the term.
+     * @return array    The related post tags.
+     */
+    public function related_post_tags( $term, $taxonomy ) {
+        $tags = [];
+
+        if ( ! is_string( $taxonomy ) ) {
+            $taxonomy = '';
+        }
+        if ( is_int( $term ) ) {
+            $term = get_term( $term, $taxonomy );
+        }
+
+        if ( ! empty( $term ) ) {
+            $post_types = apply_filters(
+                'akamai_purge_post_types',
+                [ 'post', 'page' ]
+            );
+            $post_statuses = apply_filters(
+                'akamai_purge_post_statuses',
+                [ 'publish', 'trash', 'future', 'draft' ]
+            );
+            $post_ids = get_posts([
+                'post_type' => $post_types,
+                'post_status' => $post_statuses,
+                'tax_query' => [
+                    [
+                        'taxonomy' => $taxonomy,
+                        'terms'    => $term->term_id
+                    ]
+                ],
+                'fields' => 'ids',
+                'numberposts' => -1,
+            ]);
+            foreach ( $post_ids as $post_id ) {
+                if ( $post_id ) {
+                    $tags[] = $this->get_post_tag( $post_id );
+                }
+            }
+        }
+
+        return $tags;
+    }
+
+    /**
+     * Get any ancestor (parent, etc) terms in the given term's taxonomy.
+     *
+     * @since  0.7.0
+     * @param  \WP_Term $term The term to search for ancestor terms.
+     * @param  string   $taxonomy Optional. The taxonomy of the term.
+     * @return array    The related term tags.
+     */
+    public function ancestor_term_tags( $term, $taxonomy ) {
+        $tags = [];
+
+        if ( ! is_string( $taxonomy ) ) {
+            $taxonomy = '';
+        }
+        if ( is_int( $term ) ) {
+            $term = get_term( $term, $taxonomy );
+        }
+
+        if ( ! empty( $term ) ) {
+            $term_ids = get_ancestors( $term->term_id, $taxonomy, 'taxonomy' );
+            foreach ( $term_ids as $term_id ) {
+                if ( $term_id ) {
+                    $tags[] = $this->get_term_tag( $term_id );
+                }
+            }
+        }
+
         return $tags;
     }
 
@@ -325,6 +407,58 @@ class Cache_Tags {
 
         return apply_filters(
             'akamai_purge_post_tags', $tags, $post, static::$instance );
+    }
+
+    /**
+     * Get a list of tags to send to Akamai for purging when a term needs
+     * to be purged.
+     *
+     * @since 0.7.0
+     * @param \WP_Term $term    The post to generate purge tags for.
+     * @param bool     $related Optional. Also purge related posts, terms and
+     *                          authors. Defaults to true.
+     * @param bool     $always  Optional. Also purge the always-purged tags.
+     *                          Defaults to true.
+     */
+    public function get_tags_for_purge_term( $term, $taxonomy, $related = true, $always = true ) {
+        $tags = [];
+
+        if ( ! is_string( $taxonomy ) ) {
+            $taxonomy = '';
+        }
+        if ( is_int( $term ) ) {
+            $term = get_term( $term, $taxonomy );
+        }
+        if ( empty( $term ) ) {
+            return apply_filters(
+                'akamai_purge_term_tags', $tags, $term, static::$instance );
+        }
+        $tags[] = $this->get_term_tag( $term );
+
+        if ( $related ) {
+            $r_terms = apply_filters(
+                'akamai_purge_term_ancestor_terms',
+                $this->ancestor_term_tags( $term, $taxonomy ),
+                $term,
+                $taxonomy,
+                static::$instance
+            );
+            $r_posts = apply_filters(
+                'akamai_purge_term_related_posts',
+                $this->related_post_tags( $term, $taxonomy ),
+                $term,
+                $taxonomy,
+                static::$instance
+            );
+            $tags = array_merge( $tags, $r_terms, $r_posts );
+        }
+
+        if ( $always ) {
+            $tags = array_merge( $this->always_purged_tags(), $tags );
+        }
+
+        return apply_filters(
+            'akamai_purge_term_tags', $tags, $term, static::$instance );
     }
 
     /**

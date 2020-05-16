@@ -59,7 +59,8 @@ class Purge {
     protected function __construct( $plugin ) {
         $this->plugin = $plugin;
 
-        // TODO, send these back to the plugin loader.
+        // TODO: send these back to the plugin loader.
+        // TODO: add auther/user update purges!
         $instance = $this; // Just to be PHP < 6.0 compliant.
         foreach ( $this->purge_post_actions() as $action ) {
             add_action(
@@ -75,8 +76,7 @@ class Purge {
             add_action(
                 $action,
                 function ( $term_id, $tt_id, $taxonomy ) use ( $instance, $action ) {
-                    // error_log( [ 'PURGE', $term_id, $tt_id, $taxonomy, $action ] );
-                    // FIXME ...
+                    return $instance->purge_term( $term_id, $action, $tt_id, $taxonomy );
                 },
                 10,
                 3
@@ -100,7 +100,14 @@ class Purge {
             'akamai_purge_post_statuses',
             [ 'publish', 'trash', 'future', 'draft' ]
         );
-        if ( ! in_array( get_post_status( $post_id ), $purge_post_statuses ) ) {
+        if ( ! in_array( get_post_status( $post_id ), $purge_post_statuses, true ) ) {
+            return;
+        }
+        $purge_post_types = apply_filters(
+            'akamai_purge_post_types',
+            [ 'post', 'page' ]
+        );
+        if ( ! in_array( get_post_type( $post_id ), $purge_post_types, true ) ) {
             return;
         }
 
@@ -114,7 +121,7 @@ class Purge {
             'target-type' => 'post-' . get_post_type( $post_id ),
             'target-post' => get_post( $post_id ),
             'cache-tags'  => $cache_tags,
-            'purge-type'  => 'invalidate',
+            'purge-type'  => 'invalidate', // FIXME: pull from settings!
         ];
         $purge_params = array_values( $purge_info );
         if ( ! apply_filters( 'akamai_do_purge', true, ...$purge_params ) ) {
@@ -146,7 +153,79 @@ class Purge {
             },
             100
         );
+    }
+
+    /**
+     * Callback for term-change events to trigger purges.
+     *
+     * @since 0.7.0
+     * @param int    $term_id The term_id for the triggered term.
+     * @param string $action The action that triggered the purge.
+     * @param int    $tt_id The term-taxonomy ID for the .
+     * @param int    $taxonomy The action that triggered the purge.
+     */
+    public function purge_term( $term_id, $action, $tt_id, $taxonomy ) {
+        // Only run once per request.
+        if ( did_action( 'akamai_to_purge_term' ) ) {
+            return;
         }
+        // Make sure this is a "purged taxonomy", ie a taxonomy that we
+        // run purges for.
+        $purge_taxonomies = apply_filters(
+            'akamai_purge_taxonomies',
+            (array) get_taxonomies()
+        );
+        if ( ! in_array( $taxonomy, $purge_taxonomies, true ) ) {
+            return;
+        }
+
+        $settings = $this->plugin->get_settings();
+
+        // Generate objects to query. TODO: break out, switch on purge method.
+        $cache_tags = Cache_Tags::instance(
+            $this->plugin
+        )->get_tags_for_purge_term(
+            $term_id,
+            $taxonomy
+        );
+        $purge_info = [
+            'action'      => $action,
+            'target-type' => 'term-' . $taxonomy,
+            'target-term' => get_term( $term_id ),
+            'tt-id'       => $tt_id,
+            'cache-tags'  => $cache_tags,
+            'purge-type'  => 'invalidate', // FIXME: pull from settings!
+        ];
+        $purge_params = array_values( $purge_info );
+        if ( ! apply_filters( 'akamai_do_purge', true, ...$purge_params ) ) {
+            return;
+        }
+
+        do_action( 'akamai_to_purge', ...$purge_params );
+        do_action( 'akamai_to_purge_term', ...$purge_params );
+        $client = new Request(
+            $this->plugin->get_edge_auth_client(),
+            $this->plugin->get_user_agent()
+        );
+        $response = $client->purge(
+            $options = $settings,
+            $objects = $cache_tags
+        );
+        do_action( 'akamai_purged_term', $response, ...$purge_params );
+
+        $instance = $this; // Be nice, support PHP 5.
+        add_filter(
+            'redirect_term_location',
+            function( $location ) use ( $response, $instance, $purge_info ) {
+                return $instance->add_notice_query_arg(
+                    $location,
+                    $response,
+                    $purge_info,
+                    'redirect_term_location'
+                );
+            },
+            100
+        );
     }
 
     /**
