@@ -82,6 +82,14 @@ class Cache_Headers {
     protected $plugin;
 
     /**
+     * A reference to the cache tags class instance.
+     *
+     * @since  0.7.0
+     * @var    Cache_Tags $tagger The cache tags class instance.
+     */
+    public $tagger;
+
+    /**
      * Instantiates an instance.
      *
      * @since  0.7.0
@@ -90,6 +98,7 @@ class Cache_Headers {
      */
     protected function __construct( $plugin ) {
         $this->plugin = $plugin;
+        $this->tagger = Cache_Tags::instance( $plugin );
 
         // TODO: send these back to the plugin loader.
         add_action( 'wp', [ $this, 'emit_cache_tags' ], 102 );
@@ -231,19 +240,66 @@ class Cache_Headers {
             $this::$instance
         );
 
-        // TODO: build out logic for determining page type and template.
-        // TODO: turn this into the a list of tags.
-        // TODO: hook into all necessary to build a tag list, then merge
-        //       and filter below.
+        // Identify the current template type(s).
+        $template_types = $this->template_types( $wp_query );
 
-        $cache_tags = [
-            'tpt-all',
-            'tpt-tm-feed'
-        ];
-        // $cache_tags = Cache_Tags::instance()->tags_from_query(
-        //     $wp_query,
-        //     $include_related
-        // );
+        // Gather tags, then merge, de-dupe, and prune.
+        $universal_tags = $this->tagger->get_tags_for_emit_universal();
+        $template_tags = array_map(
+            [ $this->tagger, 'get_template_tag' ],
+            $template_types
+        );
+        $object_tags = [];
+        if (
+            in_array( 'post', $template_types ) ||
+            in_array( 'page', $template_types ) ||
+            in_array( 'attachment', $template_types ) ) {
+            $object_tags = $this->tagger->get_tags_for_emit_post(
+                $wp_query->post, $include_related );
+        } else {
+            // Default is to get tags for all posts on page.
+            // NOTE: not getting related for a list of posts...Good?
+            foreach ( $wp_query->posts as $post ) {
+                $object_tags = array_merge(
+                    $object_tags,
+                    $this->tagger->get_tags_for_emit_post( $post, false )
+                );
+            }
+        }
+        if ( in_array( 'term', $template_types ) ) {
+            $term = $wp_query->get_queried_object();
+            $object_tags = $this->tagger->get_tags_for_emit_term(
+                $term, $term->taxonomy, $include_related );
+        }
+
+        $cache_tags = array_merge(
+            $universal_tags,
+            $template_tags,
+            $object_tags
+        );
+        $cache_tags = array_unique( $cache_tags );
+        $cache_tags = array_filter( $cache_tags );
+
+        // TODO: if one of the tags is an always purge tag, remove all
+        //       the other tags. Possibly implement as a 10 priority
+        //       filter below that can be removed by referencing the
+        //       singleton instance callable.
+
+        /**
+         * Filter: akamai_emit_cache_tags
+         *
+         * @since 0.7.0
+         *
+         * @param array         $cache_tags The final list of tags to emit.
+         * @param \WP_Query     $wp_query The main query object.
+         * @param Cache_Headers $cache This instance. Good helpers!
+         */
+        $cache_tags = apply_filter(
+            'akamai_emit_cache_tags',
+            $cache_tags,
+            $wp_query,
+            $this::$instance
+        );
 
         $this->emit_header(
             'Edge-Cache-Tag',
