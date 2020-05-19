@@ -37,6 +37,42 @@ class Cache_Headers {
     }
 
     /**
+     * General template types.
+     *
+     * @since 0.7.0
+     * @var   array
+     */
+    static public $template_types = [
+        'single',
+        'preview',
+        'front_page',
+        'page',
+        'archive',
+        'date',
+        'year',
+        'month',
+        'day',
+        'time',
+        'author',
+        'category',
+        'tag',
+        'tax',
+        'search',
+        'feed',
+        'comment_feed',
+        'trackback',
+        'home',
+        '404',
+        'paged',
+        'admin',
+        'attachment',
+        'singular',
+        'robots',
+        'posts_page',
+        'post_type_archive',
+    ];
+
+    /**
      * A reference to the Akamai Plugin class instance.
      *
      * @since  0.7.0
@@ -215,6 +251,75 @@ class Cache_Headers {
             $replace = true,
             $delim = ','
         );
+    }
+
+    /**
+     * Determine the type of WordPress template being displayed.
+     *
+     * @since  0.7.0
+     * @param  \WP_Query $wp_query The query object to inspect.
+     * @return array     The template name(s). If can not be determined,
+     *                   is [ 'other' ]. In the case of single CPT or
+     *                   custom term pages, is 'post' and CPT / 'term'
+     *                   custom term; by default [ 'post', 'post' ] and
+     *                   [ 'term', 'tag'/'category ].
+     */
+    public function template_types( $wp_query ) {
+
+        /**
+         * This function has the potential to be called in the admin
+         * context. Unfortunately, in the admin context, $wp_query isn't
+         * a \WP_Query object. Bad things happen when call_user_func is
+         * applied below. As such, lets' be cautious and make sure that
+         * the $wp_query object is indeed a \WP_Query object.
+         */
+        if ( ! is_a( $wp_query, 'WP_Query' ) ) {
+            return [ 'admin' ];
+        }
+
+        // Duck-type using an "is_TYPE" call: if it is a callable
+        // function, call and see if it returns true.
+        $template_type = 'other';
+        foreach ( $this::$template_types as $type ) {
+            $cb = [ $wp_query, "is_{$type}" ];
+            if ( method_exists( ...$cb ) && is_callable( $cb ) ) {
+                if ( true === call_user_func( $cb ) ) {
+                    $template_type = $type;
+                    break;
+                }
+            }
+        }
+
+        // Dasherize!
+        $template_type = str_replace( '_', '-',  $template_type );
+
+        // More info:
+        //   - break out single/singular into the actual post type.
+        //   - break out tag/category/tax into the actual term type.
+        //   - could do more!
+        $template_types = [];
+        switch ( $template_type ) {
+            case 'single':
+            case 'singular':
+                $template_types = [
+                    'post',
+                    $wp_query->post->post_type
+                ];
+                break;
+            case 'tag':
+            case 'category':
+            case 'tax':
+                $template_types = [ 'term' ];
+                $obj = $wp_query->get_queried_object();
+                if ( !empty( $obj->term_id ) && !empty( $obj->taxonomy ) ) {
+                    $template_types[] = $obj->taxonomy;
+                }
+                break;
+            default:
+                $template_types = [ $template_type ];
+        }
+
+        return $template_types;
     }
 
     /**
