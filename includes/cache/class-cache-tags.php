@@ -368,15 +368,60 @@ class Cache_Tags {
     }
 
     /**
+     * Get a list of tags to send in cache tag headers for a single post
+     * (page, post, attachment, CPT, &c).
+     *
+     * @since  0.7.0
+     * @param  \WP_Post $post The post to generate emitted tags for.
+     * @param  bool     $related Optional. Also emit related posts, terms and
+     *                           authors. Defaults to true.
+     * @return array    The tags.
+     */
+    public function get_tags_for_emit_post( $post, $related = true ) {
+        $tags = [];
+
+        if ( is_int( $post ) ) {
+            $post = get_post( $post );
+        }
+        if ( empty( $post ) ) {
+            return apply_filters(
+                'akamai_emit_post_tags', $tags, $post, static::$instance );
+        }
+        $tags[] = $this->get_post_tag( $post );
+
+        if ( $related ) {
+            $r_posts = apply_filters(
+                'akamai_emit_post_related_posts', [], $post, static::$instance );
+            $r_terms = apply_filters(
+                'akamai_emit_post_related_terms',
+                $this->related_term_tags( $post ),
+                $post,
+                static::$instance
+            );
+            $r_authors = apply_filters(
+                'akamai_emit_post_related_authors',
+                $this->related_author_tags( $post ),
+                $post,
+                static::$instance
+            );
+            $tags = array_merge( $tags, $r_posts, $r_terms, $r_authors );
+        }
+
+        return apply_filters(
+            'akamai_emit_post_tags', $tags, $post, static::$instance );
+    }
+
+    /**
      * Get a list of tags to send to Akamai for purging when a post needs
      * to be purged.
      *
-     * @since 0.7.0
-     * @param \WP_Post $post    The post to generate purge tags for.
-     * @param bool     $related Optional. Also purge related posts, terms and
-     *                          authors. Defaults to true.
-     * @param bool     $always  Optional. Also purge the always-purged tags.
-     *                          Defaults to true.
+     * @since  0.7.0
+     * @param  \WP_Post $post The post to generate purge tags for.
+     * @param  bool     $related Optional. Also purge related posts, terms and
+     *                  authors. Defaults to true.
+     * @param  bool     $always  Optional. Also purge the always-purged tags.
+     *                  Defaults to true.
+     * @return array    The tags.
      */
     public function get_tags_for_purge_post( $post, $related = true, $always = true ) {
         $tags = [];
@@ -417,15 +462,63 @@ class Cache_Tags {
     }
 
     /**
+     * Get a list of tags to send in cache tag headers for a single term
+     * (tag, category, &c).
+     *
+     * @since  0.7.0
+     * @param  \WP_Term $term The post to generate emitted tags for.
+     * @param  bool     $related Optional. Also emit related posts, terms and
+     *                  authors. Defaults to true.
+     * @return array    The tags.
+     */
+    public function get_tags_for_emit_term( $term, $taxonomy, $related = true ) {
+        $tags = [];
+
+        if ( ! is_string( $taxonomy ) ) {
+            $taxonomy = '';
+        }
+        if ( is_int( $term ) ) {
+            $term = get_term( $term, $taxonomy );
+        }
+        if ( empty( $term ) ) {
+            return apply_filters(
+                'akamai_emit_term_tags', $tags, $term, static::$instance );
+        }
+        $tags[] = $this->get_term_tag( $term );
+
+        if ( $related ) {
+            $r_terms = apply_filters(
+                'akamai_emit_term_ancestor_terms',
+                $this->ancestor_term_tags( $term, $taxonomy ),
+                $term,
+                $taxonomy,
+                static::$instance
+            );
+            $r_posts = apply_filters(
+                'akamai_emit_term_related_posts',
+                $this->related_post_tags( $term, $taxonomy ),
+                $term,
+                $taxonomy,
+                static::$instance
+            );
+            $tags = array_merge( $tags, $r_terms, $r_posts );
+        }
+
+        return apply_filters(
+            'akamai_emit_term_tags', $tags, $term, static::$instance );
+    }
+
+    /**
      * Get a list of tags to send to Akamai for purging when a term needs
      * to be purged.
      *
-     * @since 0.7.0
-     * @param \WP_Term $term    The post to generate purge tags for.
-     * @param bool     $related Optional. Also purge related posts, terms and
-     *                          authors. Defaults to true.
-     * @param bool     $always  Optional. Also purge the always-purged tags.
-     *                          Defaults to true.
+     * @since  0.7.0
+     * @param  \WP_Term $term The post to generate purge tags for.
+     * @param  bool     $related Optional. Also purge related posts, terms and
+     *                  authors. Defaults to true.
+     * @param  bool     $always  Optional. Also purge the always-purged tags.
+     *                  Defaults to true.
+     * @return array    The tags.
      */
     public function get_tags_for_purge_term( $term, $taxonomy, $related = true, $always = true ) {
         $tags = [];
@@ -489,5 +582,22 @@ class Cache_Tags {
      */
     public function get_tags_for_purge_all() {
         return [ $this->get_site_code() . '-all' ];
+    }
+
+    /**
+     * Get the tags that need to be universally emitted to allow simple
+     * purging of sites and multisite properties.
+     *
+     * @since  0.7.0
+     * @return array List of tags necessary to identify the specifically
+     *               current multisite site and/or the site as whole.
+     */
+    public function get_tags_for_emit_universal() {
+        return array_unique(
+            [
+                $this->get_site_tag(),
+                $this->get_site_code() . '-all',
+            ]
+        );
     }
 }
