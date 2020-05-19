@@ -424,11 +424,11 @@ class Cache_Headers {
         if ( is_array( $value ) ) {
             $value = join( "{$delim} ", $value );
         }
-        $snake_name = str_replace( '-', '_', mb_strtolower( $name, 'UTF-8' ) );
+        $snake_name = $this->snake( $name );
 
         /**
-         * Action: akamai_pre_emit_{HEADER_NAME}
-         * Action: akamai_post_emit_{HEADER_NAME}
+         * Action: akamai_pre_emit_{$HEADER_NAME}
+         * Action: akamai_post_emit_{$HEADER_NAME}
          *
          * Eg:
          *    - akamai_pre_emit_cache_control
@@ -444,5 +444,27 @@ class Cache_Headers {
         do_action( "akamai_pre_emit_{$snake_name}", $value, $replace );
         header( "{$name}: {$value}", $replace );
         do_action( "akamai_post_emit_{$snake_name}", $value, $replace );
+    }
+
+    /**
+     * A small helper for dasherizing strings.
+     *
+     * @since  0.7.0
+     * @param  string $val The string to dasherize.
+     * @return string The dasherized string.
+     */
+    public function dashes( $val ) {
+        return str_replace( '_', '-', mb_strtolower( $val, 'UTF-8' ) );
+    }
+
+    /**
+     * A small helper for snake-casing strings.
+     *
+     * @since  0.7.0
+     * @param  string $val The string to snake-case.
+     * @return string The snake-cased string.
+     */
+    public function snake( $val ) {
+        return str_replace( '-', '_', mb_strtolower( $val, 'UTF-8' ) );
     }
 }
