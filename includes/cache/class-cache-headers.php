@@ -280,6 +280,34 @@ class Cache_Headers {
         $cache_tags = array_unique( $cache_tags );
         $cache_tags = array_filter( $cache_tags );
 
+        /**
+         * Filter: akamai_emit_{$TEMPLATE}_cache_tags
+         *
+         * Before running the catch-all cache tags filter, run one
+         * specific to the current template types!
+         *
+         * Eg:
+         *     - akamai_emit_post_cache_tags
+         *     - akamai_emit_video_cache_tags (CPT)
+         *     - akamai_emit_feed_cache_tags
+         *     - akamai_emit_category_cache_tags
+         *     - akamai_emit_home_cache_tags
+         *
+         * @since 0.7.0
+         *
+         * @param array         $cache_tags The list of cache tags to emit.
+         * @param \WP_Query     $wp_query The main query object.
+         * @param Cache_Headers $cache This instance. Good helpers!
+         */
+        foreach ( $template_types as $template ) {
+            $cache_tags = apply_filters(
+                "akamai_emit_{$template}_cache_tags",
+                $cache_tags,
+                $wp_query,
+                $this::$instance
+            );
+        }
+
         // TODO: if one of the tags is an always purge tag, remove all
         //       the other tags. Possibly implement as a 10 priority
         //       filter below that can be removed by referencing the
@@ -294,7 +322,7 @@ class Cache_Headers {
          * @param \WP_Query     $wp_query The main query object.
          * @param Cache_Headers $cache This instance. Good helpers!
          */
-        $cache_tags = apply_filter(
+        $cache_tags = apply_filters(
             'akamai_emit_cache_tags',
             $cache_tags,
             $wp_query,
