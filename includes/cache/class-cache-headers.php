@@ -56,6 +56,7 @@ class Cache_Headers {
         $this->plugin = $plugin;
 
         // TODO: send these back to the plugin loader.
+        add_action( 'wp', [ $this, 'emit_cache_tags' ], 102 );
         add_action( 'wp', [ $this, 'emit_cache_control' ], 102 );
     }
 
@@ -124,6 +125,96 @@ class Cache_Headers {
         );
 
         $this->emit_header( 'Cache-Control', $cache_control );
+    }
+
+    /**
+     * Emits (sends) an Edge-Cache-Tag header. This header will overwrite
+     * any previously set one (thus should hook into a large (low)
+     * priority for the 'wp' action).
+     *
+     * This is a complex action that uses the current query's info to
+     * determine the page type and template, and then adds all other
+     * tags that it should to a list, which can then be filtered:
+     * akamai_cache_tags_header.
+     *
+     * It is run whenever the user is not logged in to admin, and
+     * according to the outcome of the filter
+     * 'akamai_do_emit_cache_tags' (defaulting to the value in the
+     * settings).
+     *
+     * @since 0.7.0
+     * @global \WP_Query $wp_query The main query object for the page.
+     */
+    public function emit_cache_tags() {
+        global $wp_query;
+
+        /**
+         * If a user is logged in, cache control headers should be
+         * ignored. We do not want to cache any logged in
+         * user views. WordPress sets a "Cache-Control:no-cache,
+         * must-revalidate, max-age=0" header for logged in views and
+         * should be sufficient for keeping logged in views uncached.
+         */
+        if ( is_user_logged_in() ) {
+            return;
+        }
+
+        /**
+         * Filter: akamai_do_emit_cache_tags
+         *
+         * @since 0.7.0
+         *
+         * @param bool          $do_emit Whether to emit the header.
+         * @param \WP_Query     $wp_query The main query object.
+         * @param Cache_Headers $cache This instance. Good helpers!
+         */
+        $do_emit = apply_filters(
+            'akamai_do_emit_cache_tags',
+            $this->plugin->setting( 'emit-cache-tags' ),
+            $wp_query,
+            $this::$instance
+        );
+        if ( ! $do_emit ) {
+            return;
+        }
+
+        /**
+         * Filter: akamai_cache_include_related_tags
+         *
+         * @since 0.7.0
+         *
+         * @param bool          $do_emit Whether to include related
+         *                      objects tags.
+         * @param \WP_Query     $wp_query The main query object.
+         * @param Cache_Headers $cache This instance. Good helpers!
+         */
+        $include_related = apply_filters(
+            'akamai_cache_include_related_tags',
+            $this->plugin->setting( 'cache-related-tags' ),
+            $wp_query,
+            $this::$instance
+        );
+
+        // TODO: build out logic for determining page type and template.
+        // TODO: turn this into the a list of tags.
+        // TODO: hook into all necessary to build a tag list, then merge
+        //       and filter below.
+
+        $cache_tags = [
+            'tpt-all',
+            'tpt-tm-feed'
+        ];
+        // $cache_tags = Cache_Tags::instance()->tags_from_query(
+        //     $wp_query,
+        //     $include_related
+        // );
+
+        $this->emit_header(
+            'Edge-Cache-Tag',
+            $cache_tags,
+            $replace = true,
+            $delim = ','
+        );
     }
 
     /**
