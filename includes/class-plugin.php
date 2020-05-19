@@ -97,21 +97,21 @@ class Plugin {
      * @var   array $default_options The default options settings.
      */
     public $default_options = [
-        // 'hostname'              => ..., // Handled in Akamai::get_settings().
-        'unique-sitecode'       => '',
-        'add-tags-to-notices'   => 0,
-        'log-errors'            => 0,
-        'log-purges'            => 0,
-        'emit-cache-headers'    => 0,
-        'emit-cache-tags'       => 0,
-        'cache-default-headers' => '',
-        'cache-related-tags'    => 1,
-        'purge-network'         => 'all',
-        'purge-type'            => 'invalidate',
-        'purge-method'          => 'tags',
-        'purge-related'         => 1,
-        'purge-default'         => 1,
-        'purge-on-comment'      => 0,
+        // 'hostname'             => ..., // Handled in Akamai::get_settings().
+        'unique-sitecode'      => '',
+        'add-tags-to-notices'  => 0,
+        'log-errors'           => 0,
+        'log-purges'           => 0,
+        'emit-cache-control'   => 0,
+        'emit-cache-tags'      => 0,
+        'cache-default-header' => '',
+        'cache-related-tags'   => 1,
+        'purge-network'        => 'all',
+        'purge-type'           => 'invalidate',
+        'purge-method'         => 'tags',
+        'purge-related'        => 1,
+        'purge-default'        => 1,
+        'purge-on-comment'     => 0,
     ];
 
     /**
