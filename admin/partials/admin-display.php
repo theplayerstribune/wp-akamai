@@ -466,6 +466,21 @@
                     </tbody>
                 </table>
 
+                <?php
+                /**
+                 * Action: akamai_settings_page_template
+                 *
+                 * More "settings" can be added here, and then handled
+                 * in the akamai_settings_to_validate filter.
+                 *
+                 * @since 0.7.0
+                 * @param Admin $admin he admin singleton instance,
+                 *              which you can use to reference the inner
+                 *              workings of the plugin.
+                 */
+                do_action( 'akamai_settings_page_template', $this );
+                ?>
+
                 <?php submit_button( 'Save settings', 'primary', 'submit', false ); ?>
             </form>
         </div>
