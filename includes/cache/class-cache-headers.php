@@ -363,44 +363,46 @@ class Cache_Headers {
 
         // Duck-type using an "is_TYPE" call: if it is a callable
         // function, call and see if it returns true.
-        $template_type = 'other';
+        $template_types = [];
         foreach ( $this::$template_types as $type ) {
             $cb = [ $wp_query, "is_{$type}" ];
             if ( method_exists( ...$cb ) && is_callable( $cb ) ) {
                 if ( true === call_user_func( $cb ) ) {
-                    $template_type = $type;
-                    break;
+                    $template_types[] = $this->dashes( $type );
                 }
             }
         }
+        if ( count( $template_types ) === 0 ) {
+            $template_types = [ 'other' ];
+        }
 
-        // Dasherize!
-        $template_type = str_replace( '_', '-',  $template_type );
-
-        // More info:
-        //   - break out single/singular into the actual post type.
-        //   - break out tag/category/tax into the actual term type.
-        //   - could do more!
-        $template_types = [];
-        switch ( $template_type ) {
+        // Gather more template types based on the "primary" type (the
+        // order of the type search is VERY important, as this only
+        // looks at the first one found above):
+        //   - single/singular prepends "post" and the actual post type
+        //     (usually also "post");
+        //   - tag/category/tax prepends "term" and actual term type;
+        //   - TODO: could do more!
+        switch ( $template_types[0] ) {
             case 'single':
             case 'singular':
-                $template_types = [
-                    'post',
-                    $wp_query->post->post_type
-                ];
+                $template_types = array_merge(
+                    [
+                        'post',
+                        $this->dashes( $wp_query->post->post_type ),
+                    ],
+                    $template_types
+                );
                 break;
             case 'tag':
             case 'category':
             case 'tax':
-                $template_types = [ 'term' ];
+                $template_types = array_merge( [ 'term' ], $template_types );
                 $obj = $wp_query->get_queried_object();
                 if ( !empty( $obj->term_id ) && !empty( $obj->taxonomy ) ) {
                     $template_types[] = $obj->taxonomy;
                 }
                 break;
-            default:
-                $template_types = [ $template_type ];
         }
 
         return $template_types;
