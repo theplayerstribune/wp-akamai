@@ -78,6 +78,14 @@ class Plugin {
     public $purge;
 
     /**
+     * A reference to the cache headers class instance.
+     *
+     * @since  0.7.0
+     * @var    Cache_Headers $cache The cache headers class instance.
+     */
+    public $cache;
+
+    /**
      * Default credentials settings.
      *
      * @since   0.7.0
@@ -132,6 +140,7 @@ class Plugin {
         $this->loader = new Loader();
         $this->admin = Admin\Admin::instance( $this );
         $this->purge = Purge\Purge::instance( $this );
+        $this->cache = Cache\Cache_Headers::instance( $this );
 
         $this->define_admin_hooks();
     }
@@ -150,6 +159,7 @@ class Plugin {
         require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-purge.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-request.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-tags.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-headers.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-admin.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-notice.php';
     }
