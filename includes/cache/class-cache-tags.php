@@ -5,14 +5,11 @@ namespace Akamai\WordPress\Cache;
 /**
  * Cache_Tags is a singleton for managing cache tag behavior.
  *
- * Handles basic rules for generating cache tags (ie surrogate keys), and
- * determining which tags are relevant to (emitted as headers or sent in a purge
- * request) for a given post.
+ * Handles basic rules for generating cache tags (ie surrogate keys),
+ * and determining which tags are relevant to (emitted as headers or
+ * sent in a purge request) for a given post.
  *
  * @todo:
- *
- *   - get_tags_for_cache_header( ??? ) : [string] => switch on type
- *   - get_tags_for_purge_term( ??? )   : [string]
  *   - get_tags_for_purge_author( ??? ) : [string]
  *
  * @since   0.7.0
@@ -121,17 +118,27 @@ class Cache_Tags {
      * A helper for standardizing / customizing tag generation.
      *
      * @since  0.7.0
-     * @return string The unique site tag(-part) for the current site.
+     * @return string The unique site code (-part) for the current site.
      *                Same as the site code, unless multisite, then it's
      *                unique to the current site/blog.
      */
-    public function get_site_tag() {
+    public function get_site_prefix() {
         if ( is_multisite() ) {
             $tag_part = $this->tag_part( 'multisite', get_current_blog_id() );
             return $this->get_site_code() . '-' . $tag_part;
         } else {
             return $this->get_site_code();
         }
+    }
+
+    /**
+     * A tag to represent an entire site / blog (in multisite).
+     *
+     * @since  0.7.0
+     * @return string The unique site prefix prepended to '-all'.
+     */
+    public function get_site_tag() {
+        return $this->get_site_prefix() . '-all';
     }
 
     /**
@@ -146,7 +153,7 @@ class Cache_Tags {
             $value = $value->ID;
         }
         $tag_part = $this->tag_part( 'post', (string) $value );
-        return $this->get_site_tag() . '-' . $tag_part;
+        return $this->get_site_prefix() . '-' . $tag_part;
     }
 
     /**
@@ -161,7 +168,7 @@ class Cache_Tags {
             $value = $value->term_id;
         }
         $tag_part = $this->tag_part( 'term', (string) $value );
-        return $this->get_site_tag() . '-' . $tag_part;
+        return $this->get_site_prefix() . '-' . $tag_part;
     }
 
     /**
@@ -176,7 +183,7 @@ class Cache_Tags {
             $value = $value->id;
         }
         $tag_part = $this->tag_part( 'author', (string) $value );
-        return $this->get_site_tag() . '-' . $tag_part;
+        return $this->get_site_prefix() . '-' . $tag_part;
     }
 
     /**
@@ -188,7 +195,7 @@ class Cache_Tags {
      */
     public function get_template_tag( $template_type ) {
         $tag_part = $this->tag_part( 'template', $template_type );
-        return $this->get_site_tag() . '-' . $tag_part;
+        return $this->get_site_prefix() . '-' . $tag_part;
     }
 
     /**
@@ -215,7 +222,7 @@ class Cache_Tags {
     public function always_cached_tags() {
         $tags = [ $this->get_site_code() ];
         if ( is_multisite() ) {
-            $tags[] = $this->get_site_tag();
+            $tags[] = $this->get_site_prefix();
         }
         return apply_filters(
             'akamai_always_cached_tags', $tags, static::$instance );
@@ -474,13 +481,13 @@ class Cache_Tags {
     }
 
     /**
-     * Get the purge ALL tag: ie the unique site code.
+     * Get the purge ALL tag: ie the unique site code plus '-all'.
      *
      * @since  0.7.0
      * @return array List of tags necessary to purge the entire site
      *               (or all sites in multisite).
      */
     public function get_tags_for_purge_all() {
-        return [ $this->get_site_code() ];
+        return [ $this->get_site_code() . '-all' ];
     }
 }
