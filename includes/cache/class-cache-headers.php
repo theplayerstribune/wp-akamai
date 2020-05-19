@@ -72,27 +72,55 @@ class Cache_Headers {
      * settings).
      *
      * @since 0.7.0
+     * @global \WP_Query $wp_query The main query object for the page.
      */
     public function emit_cache_control() {
+        global $wp_query;
+
         /**
-         * If a user is logged in, surrogate control headers should be ignored. We do not want to cache any logged in
-         * user views. WordPress sets a "Cache-Control:no-cache, must-revalidate, max-age=0" header for logged in views
-         * and this should be sufficient for keeping logged in views uncached.
+         * If a user is logged in, cache control headers should be
+         * ignored. We do not want to cache any logged in
+         * user views. WordPress sets a "Cache-Control:no-cache,
+         * must-revalidate, max-age=0" header for logged in views and
+         * should be sufficient for keeping logged in views uncached.
          */
         if ( is_user_logged_in() ) {
             return;
         }
+
+        /**
+         * Filter: akamai_do_emit_cache_control
+         *
+         * @since 0.7.0
+         *
+         * @param bool          $do_emit Whether to emit the header.
+         * @param \WP_Query     $wp_query The main query object.
+         * @param Cache_Headers $cache This instance. Good helpers!
+         */
         $do_emit = apply_filters(
             'akamai_do_emit_cache_control',
-            $this->plugin->setting( 'emit-cache-control' )
+            $this->plugin->setting( 'emit-cache-control' ),
+            $wp_query,
+            $this::$instance
         );
         if ( ! $do_emit ) {
             return;
         }
 
+        /**
+         * Filter: akamai_cache_control_header
+         *
+         * @since 0.7.0
+         *
+         * @param string        $header The Cache-Control header value.
+         * @param \WP_Query     $wp_query The main query object.
+         * @param Cache_Headers $cache This instance. Good helpers!
+         */
         $cache_control = apply_filters(
             'akamai_cache_control_header',
-            $this->plugin->setting( 'cache-default-header' )
+            $this->plugin->setting( 'cache-default-header' ),
+            $wp_query,
+            $this::$instance
         );
 
         $this->emit_header( 'Cache-Control', $cache_control );
@@ -118,6 +146,21 @@ class Cache_Headers {
         }
         $snake_name = str_replace( '-', '_', mb_strtolower( $name, 'UTF-8' ) );
 
+        /**
+         * Action: akamai_pre_emit_{HEADER_NAME}
+         * Action: akamai_post_emit_{HEADER_NAME}
+         *
+         * Eg:
+         *    - akamai_pre_emit_cache_control
+         *    - akamai_pre_emit_edge_cache_tag
+         *
+         * @since 0.7.0
+         *
+         * @param string $value The value of the header.
+         * @param bool   $replace Whether this header will replace (or
+         *               be in a addition to) any headers already set
+         *               with the same name.
+         */
         do_action( "akamai_pre_emit_{$snake_name}", $value, $replace );
         header( "{$name}: {$value}", $replace );
         do_action( "akamai_post_emit_{$snake_name}", $value, $replace );
