@@ -293,9 +293,21 @@ class Admin {
      * @return array  The complete, current Akamai settings array.
      */
     public function validate( $new_settings = [], $verify_creds = true ) {
+        /**
+         * Filter: akamai_settings_to_validate
+         *
+         * @since 0.7.0
+         * @param array $settings The updated list of settings sent in
+         *              the POST request. The returned list is forwarded
+         *              to validation..
+         * @param Admin $admin The admin singleton instance, which you
+         *              can use to set your own, custom errors, warnings
+         *              or notices.
+         */
         $settings = apply_filters(
             'akamai_settings_to_validate',
-            $this->plugin->get_settings( $new_settings )
+            $this->plugin->get_settings( $new_settings ),
+            $this::$instance
         );
 
         $log_errors = $this->plugin->setting( 'log-errors', $settings );
