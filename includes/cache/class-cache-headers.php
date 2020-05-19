@@ -439,13 +439,15 @@ class Cache_Headers {
          * @since 0.7.0
          *
          * @param string $value The value of the header.
+         * @param string $name The name of the header (so you can reuse
+         *               callbacks).
          * @param bool   $replace Whether this header will replace (or
          *               be in a addition to) any headers already set
          *               with the same name.
          */
-        do_action( "akamai_pre_emit_{$snake_name}", $value, $replace );
+        do_action( "akamai_pre_emit_{$snake_name}", $value, $name, $replace );
         header( "{$name}: {$value}", $replace );
-        do_action( "akamai_post_emit_{$snake_name}", $value, $replace );
+        do_action( "akamai_post_emit_{$snake_name}", $value, $name, $replace );
     }
 
     /**
