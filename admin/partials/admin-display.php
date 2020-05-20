@@ -312,6 +312,28 @@
                     <tbody>
                     <tr>
                         <th scope="row">
+                            <label for="<?php echo $this->name(); ?>-purge-on-update">
+                                <?php _e( 'Purge on Update', $this->name() ); ?>
+                            </label>
+                        </th>
+                        <td>
+                            <input type="radio" id="<?php echo $this->name(); ?>-purge-on-update-yes"
+                                   name="<?php echo $this->name(); ?>[purge-on-update]"
+                                   <?php checked( $this->plugin->setting( 'purge-on-update' ), '1' ); ?>
+                                   value="1">
+                            <label for="<?php echo $this->name(); ?>-purge-on-update-yes"><?php _e( 'Yes', 'wp_admin_styles' ); ?></label>
+                            &nbsp;
+                            <input type="radio" id="<?php echo $this->name(); ?>-purge-on-update-no"
+                                   name="<?php echo $this->name(); ?>[purge-on-update]"
+                                   <?php checked( $this->plugin->setting( 'purge-on-update' ), '0' ); ?>
+                                   value="0">
+                            <label for="<?php echo $this->name(); ?>-purge-on-update-no"><?php _e( 'No', 'wp_admin_styles' ); ?></label>
+                            <p class="description">When an object in WordPress (a post, term, or user) is updated, trigger a purge
+                            according to the settings below. If you are actively caching with Akamai, this should be on.</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row">
                             <label for="<?= $this->name() ?>-purge-network">
                                 <?php _e( 'Purge Network', $this->name() ); ?>
                             </label>

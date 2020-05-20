@@ -114,6 +114,7 @@ class Plugin {
         'emit-cache-tags'      => 0,
         'cache-default-header' => '',
         'cache-related-tags'   => 1,
+        'purge-on-update'      => 0,
         'purge-network'        => 'all',
         'purge-type'           => 'invalidate',
         'purge-method'         => 'tags',
