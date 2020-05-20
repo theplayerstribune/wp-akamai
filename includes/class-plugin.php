@@ -159,6 +159,7 @@ class Plugin {
         require_once AKAMAI_PLUGIN_PATH . 'includes/class-loader.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-purge.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-request.php';
+        require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-context.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-tags.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-headers.php';
         require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-admin.php';

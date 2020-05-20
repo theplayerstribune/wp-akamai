@@ -94,6 +94,79 @@ class Purge {
     }
 
     /**
+     * Callback for post-change events to trigger purges.
+     *
+     * @since 0.7.0
+     * @param int    $post_id The post ID for the triggered post.
+     * @param string $action The action that triggered the purge.
+     */
+    public function purge_post( $post_id, $action ) {
+        $purge_ctx = $this->purge_info( $action, \get_post( $post_id ) );
+
+        if (
+            did_action( 'akamai_pre_purge_post' )
+            || ! $this->has_purge_post_status( $post_id )
+            || ! $this->has_purge_post_type( $post_id )
+            || ! $this->do_purge( $purge_ctx ) ) {
+            return;
+        }
+
+        $response = $this->purge_request( $purge_ctx );
+
+        $instance = $this; // Be nice, support PHP 5.
+        add_filter(
+            'redirect_post_location',
+            function( $location ) use ( $response, $instance, $purge_ctx ) {
+                return $instance->add_notice_query_arg(
+                    $location,
+                    $response,
+                    $purge_ctx,
+                    'redirect_post_location'
+                );
+            },
+            100
+        );
+    }
+
+    /**
+     * Callback for term-change events to trigger purges.
+     *
+     * @since 0.7.0
+     * @param int    $term_id The term_id for the triggered term.
+     * @param string $action The action that triggered the purge.
+     * @param int    $tt_id The term-taxonomy ID for the .
+     * @param int    $taxonomy The action that triggered the purge.
+     */
+    public function purge_term( $term_id, $action, $tt_id, $taxonomy ) {
+        $purge_ctx = $this->purge_info( $action, \get_term( $term_id ) );
+        $purge_ctx->set_meta( 'tt-id', $tt_id );
+
+        if (
+            did_action( 'akamai_pre_purge_term' )
+            || ! $this->has_purge_term_taxonomy( $taxonomy )
+            || ! $this->do_purge( $purge_ctx )
+        ) {
+            return;
+        }
+
+        $response = $this->purge_request( $purge_ctx );
+
+        $instance = $this; // Be nice, support PHP 5.
+        add_filter(
+            'redirect_term_location',
+            function( $location ) use ( $response, $instance, $purge_ctx ) {
+                return $instance->add_notice_query_arg(
+                    $location,
+                    $response,
+                    $purge_ctx,
+                    'redirect_term_location'
+                );
+            },
+            100
+        );
+    }
+
+    /**
      * Generate a purge context metadata object from current purge settings
      * and the specifics of the triggering update and the underlying WP
      * object which is being updated. This metadata is used:
@@ -107,35 +180,37 @@ class Purge {
      *       with its own methods / biz logic.
      *
      * @since  0.7.0
-     * @param  string $action The name of the action that triggered the
-     *                purge.
-     * @param  object $target The WP object on which the purge was
-     *                triggered. Can be a WP_Post, WP_Term, or WP_User.
-     * @return Purge_Context The basic, mutable purge metadata instance
-     *                       to handle a triggered purge.
+     * @param  string  $action The name of the action that triggered the
+     *                 purge.
+     * @param  object  $object The WP object on which the purge was
+     *                 triggered. Can be a WP_Post, WP_Term, or WP_User.
+     * @return Context The basic, mutable purge metadata instance to
+     *                 handle a triggered purge.
      */
-    public function purge_info( $action, $object_type, $object_id, $taxonomy = '' ) {
-        $info = [
-            'action' => $action,
-            'purge-type' => 'invalidate', // FIXME: pull from settings!
-        ];
+    public function purge_info( $action, $object ) {
+        $ctx = new Context( $action, $object, $this->plugin );
 
-
-        switch ( $object_type ) {
+        // NOTE (PJ): not encapsulating this in the Context class bc I
+        // don't want that class to know, necessarily, about the
+        // Cache_Tag class. Knowing about the Plugin class is fine, tho.
+        // I think...
+        switch ( $ctx->object_type() ) {
             case 'post':
-                $info['target-type'] = 'post-' . \get_post_type( $object_id );
-                $info['target-object'] = \get_post( $object_id );
-                $info['purge-objects'] = $this->tagger->get_tags_for_purge_post( $object_id );
-                break;
+                $tags = $this->tagger->get_tags_for_purge_post(
+                    $ctx->object_id()
+                );
+                $ctx->purge_objects( $tags );
+            break;
             case 'term':
-                $info['target-type'] = 'term-' . $taxonomy;
-                $info['target-object'] = \get_term( $object_id );
-                $info['purge-objects'] =
-                    $this->tagger->get_tags_for_purge_term( $object_id, $taxonomy );
+                $tags = $this->tagger->get_tags_for_purge_term(
+                    $ctx->object_id(),
+                    $taxonomy = $ctx->object_group()
+                );
+                $ctx->purge_objects( $tags );
                 break;
         }
 
-        return $purge_info;
+        return $ctx;
     }
 
     /**
@@ -146,12 +221,12 @@ class Purge {
      * request is sent.
      *
      * @since  0.7.0
-     * @param  Purge_Context $purge_ctx The triggered context, passed by
-     *                       reference.
-     * @return bool Whether to fire the purge request (final answer).
+     * @param  Context $purge_ctx The triggered context, passed by
+     *                 reference.
+     * @return bool    Whether to fire the purge request (final answer).
      */
     public function do_purge( &$purge_ctx ) {
-        $do_purge = $this->plugin->settings( 'purge-on-update' );
+        $do_purge = $this->plugin->setting( 'purge-on-update' );
 
         /**
          * Filter: akamai_do_purge
@@ -160,7 +235,7 @@ class Purge {
          * @param bool  $do_purge Whether to fire the purge.
          * @param array $purge_params A list of params, passed as a hash
          *              to be mutable references. Currently, the only
-         *              param is $purge_params['ctx'], the Purge_Context.
+         *              param is $purge_params['ctx'], the Purge\Context.
          */
         return apply_filters(
             'akamai_do_purge', $do_purge, [ 'ctx' => $purge_ctx ] );
@@ -171,10 +246,11 @@ class Purge {
      * the request and handles attached action hooks.
      *
      * @since  0.7.0
-     * @param  Purge_Context The purge context, ready to go.
-     * @return array A normalized Akamai API response for the request.
+     * @param  Context The purge context, ready to go.
+     * @return array   A normalized Akamai API response for the request.
      */
-    public function purge_request( $object_type, $purge_ctx ) {
+    public function purge_request( $purge_ctx ) {
+
         $client = new Request(
             $this->plugin->get_edge_auth_client(),
             $this->plugin->get_user_agent()
@@ -193,16 +269,14 @@ class Purge {
          * general one fires for all purges.
          *
          * @since 0.7.0
-         * @param Purge_Context $purge_ctx The metadata for the request,
-         *                      right before it fires.
+         * @param array $purge_params A list of params, passed as a hash
+         *              to be mutable references. Currently, the only
+         *              param is $purge_params['ctx'], the Purge\Context.
          */
-        do_action( "akamai_pre_purge_{$object_type}", $purge_ctx );
-        do_action( 'akamai_pre_purge', $purge_ctx );
+        do_action( "akamai_pre_purge_{$purge_ctx->object_type()}", [ 'ctx' => $purge_ctx ] );
+        do_action( 'akamai_pre_purge', [ 'ctx' => $purge_ctx ] );
 
-        $response = $client->purge(
-            $options = $this->plugin->get_settings(),
-            $objects = $purge_ctx['purge-objects']
-        );
+        $response = $client->purge( $purge_ctx );
 
         /**
          * Action: akamai_post_purge_{$OBJECT_TYPE}
@@ -217,88 +291,21 @@ class Purge {
          * general one fires for all purges.
          *
          * @since 0.7.0
-         * @param array         $response The normalized Akamai API
-         *                      response for the purge request.
-         * @param Purge_Context $purge_ctx The metadata for the request,
-         *                      right after it fires.
+         * @param array $response The normalized Akamai API response for
+         *              the purge request.
+         * @param array $purge_params A list of params, passed as a hash
+         *              to be mutable references. Currently, the only
+         *              param is $purge_params['ctx'], the Purge\Context.
          */
-        do_action( "akamai_post_purge_{$object_type}", $response, $purge_ctx );
-        do_action( 'akamai_post_purge', $response, $purge_ctx );
+        do_action(
+            "akamai_post_purge_{$purge_ctx->object_type()}",
+            $response,
+            [ 'ctx' => $purge_ctx ]
+        );
+        do_action(
+            'akamai_post_purge', $response, [ 'ctx' => $purge_ctx ] );
 
         return $response;
-    }
-
-    /**
-     * Callback for post-change events to trigger purges.
-     *
-     * @since 0.7.0
-     * @param int    $post_id The post ID for the triggered post.
-     * @param string $action The action that triggered the purge.
-     */
-    public function purge_post( $post_id, $action ) {
-        $purge_info = $this->purge_info( $action, 'post', $post_id );
-
-        if (
-            did_action( 'akamai_pre_purge_post' )
-            || ! $this->has_purge_post_status( $post_id )
-            || ! $this->has_purge_post_type( $post_id )
-            || ! $this->do_purge( $purge_info ) ) {
-            return;
-        }
-
-        $this->purge_request( $object_type, $purge_info );
-
-        $instance = $this; // Be nice, support PHP 5.
-        add_filter(
-            'redirect_post_location',
-            function( $location ) use ( $response, $instance, $purge_info ) {
-                return $instance->add_notice_query_arg(
-                    $location,
-                    $response,
-                    $purge_info,
-                    'redirect_post_location'
-                );
-            },
-            100
-        );
-    }
-
-    /**
-     * Callback for term-change events to trigger purges.
-     *
-     * @since 0.7.0
-     * @param int    $term_id The term_id for the triggered term.
-     * @param string $action The action that triggered the purge.
-     * @param int    $tt_id The term-taxonomy ID for the .
-     * @param int    $taxonomy The action that triggered the purge.
-     */
-    public function purge_term( $term_id, $action, $tt_id, $taxonomy ) {
-        $purge_info = $this->purge_info( $action, 'term', $term_id, $taxonomy );
-        $purge_info['tt-id'] = $tt_id;
-
-        if (
-            did_action( 'akamai_pre_purge_term' )
-            || ! $this->has_purge_term_taxonomy( $taxonomy )
-            || ! $this->do_purge( $purge_info )
-        ) {
-            return;
-        }
-
-        $this->purge_request( $object_type, $purge_info );
-
-        $instance = $this; // Be nice, support PHP 5.
-        add_filter(
-            'redirect_term_location',
-            function( $location ) use ( $response, $instance, $purge_info ) {
-                return $instance->add_notice_query_arg(
-                    $location,
-                    $response,
-                    $purge_info,
-                    'redirect_term_location'
-                );
-            },
-            100
-        );
     }
 
     /**
@@ -309,17 +316,18 @@ class Purge {
      * dynamically and once.
      *
      * @since  0.1.0
-     * @param  string $location The Location header of the redirect: passed in
-     *                by the filter hook.
-     * @param  string $response The HTTP response code of the redirect: passed
-     *                in by the filter hook.
-     * @return array  $purge_info General information about the purge.
-     * @param  string $filter_name The filter this is being fired in, so it can
-     *                then be removed.
+     * @param  string  $location The Location header of the redirect: passed in
+     *                 by the filter hook.
+     * @param  string  $response The HTTP response code of the redirect: passed
+     *                 in by the filter hook.
+     * @return Context $purge_ctx General information about the purge.
+     * @param  string  $filter_name The filter this is being fired in, so it can
+     *                 then be removed.
      */
     public function add_notice_query_arg(
-        $location, $response, $purge_info, $filter_name ) {
+        $location, $response, $purge_ctx, $filter_name ) {
         remove_filter( $filter_name, [ $this, 'add_notice_query_arg' ], 100 );
+
         if ( $response['error'] ) {
 
             /**
@@ -341,7 +349,7 @@ class Purge {
         $message = 'This object and all related cache objects purged.';
         if ( $this->plugin->setting( 'add-tags-to-notices' ) ) {
             $message .= ' ' . $this->format_cache_tags_for_message(
-                $purge_info['cache-tags']
+                $purge_ctx->purge_objects()
             );
         }
 
@@ -520,6 +528,6 @@ class Purge {
          */
         $taxes = \apply_filters(
             'akamai_purge_taxonomies', (array) get_taxonomies() );
-        return in_array( $taxonomies, $taxes, true );
+        return in_array( $taxonomy, $taxes, true );
     }
 }

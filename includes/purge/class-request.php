@@ -24,6 +24,8 @@ class Request {
      * that consumers of the API can make simple assumptions about what to do
      * with the result.
      *
+     * TODO: upgrade to a class: Akamai\WordPress\Purge\Response.
+     *
      * @since  0.7.0
      * @param  array       $wp_response A WP response array.
      * @param  bool        $success Optional. Specifically set response outcome.
@@ -146,12 +148,10 @@ class Request {
     /**
      * Send a purge request to the Fast Purge v3 API!
      *
-     * @param  array $options An Akamai settings array subset of options to set
-     *               in the request.
-     * @param  array $objects The list of "objects" to purge from the cache.
-     * @return array A normalized Akamai API response.
+     * @param  Context $ctx A purge metadata instance.
+     * @return array   A normalized Akamai API response.
      */
-    public function purge( $options, $objects ) {
+    public function purge( $ctx ) {
         if ( ! ( $this->auth instanceof Akamai_Auth ) ) {
             return static::normalize_response(
                 $wp_response = null,
@@ -160,31 +160,9 @@ class Request {
             );
         }
 
-        // Fall back on defaults instead of erroring.
-        $type = isset( $options['purge-type'] )
-            ? $options['purge-type']
-            : 'invalidate';
-        $method = isset( $options['purge-method'] )
-            ? $options['purge-method']
-            : 'url';
-        $network = isset( $options['purge-network'] )
-            ? $options['purge-network']
-            : 'staging';
-        $version = isset( $options['version'] )
-            ? $options['version']
-            : '-';
-
-        // Transition setting values to actual sent values.
-        if ( 'all' === $network ) {
-            $network = '';
-        }
-        if ( 'arl' === $method ) {
-            $method = 'url';
-        }
-
-        $body = [ 'objects' => $objects ];
-        if ( 'url' === $method ) {
-            if ( ! isset( $options['hostname'] ) ) {
+        $body = [ 'objects' => $ctx->purge_objects() ];
+        if ( 'url' === $ctx->purge_method() ) {
+            if ( empty( $ctx->hostname() ) ) {
                 // TODO: class Akamai\WP_Plugin\Exception extends \Exception {},
                 //       appends AKAMAI_PLUGIN_INTERNAL: ...
                 throw new \Exception(
@@ -192,12 +170,12 @@ class Request {
                     'can not create URL purge request without hostname'
                 );
             }
-            $body['hostname'] = $options['hostname'];
+            $body['hostname'] = $ctx->hostname();
         }
         $body_json = wp_json_encode( $body );
 
         $this->auth->setHttpMethod( 'POST' );
-        $this->auth->setPath( "/ccu/v3/$type/$method/$network" );
+        $this->auth->setPath( $ctx->path() );
         $this->auth->setBody( $body_json );
         $request = $this->wp_request_from_auth();
 
