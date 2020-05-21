@@ -471,18 +471,11 @@ class Purge {
      * @return bool Whether to fire a purge (given all checks pass).
      */
     public function has_purge_post_status( $post_id ) {
-        $default_statuses = [ 'publish', 'trash', 'future', 'draft' ];
-
-        /**
-         * Filter: akamai_purge_post_statuses
-         *
-         * @since 0.7.0
-         * @param array $statuses The list of post-update post statuses
-         *              that a purge will fire for.
-         */
-        $statuses = \apply_filters(
-            'akamai_purge_post_statuses', $default_statuses );
-        return in_array( \get_post_status( $post_id ), $statuses, true );
+        return in_array(
+            \get_post_status( $post_id ),
+            \akamai_cacheable_post_statuses(),
+            true
+        );
     }
 
     /**
@@ -494,18 +487,11 @@ class Purge {
      * @return bool Whether to fire a purge (given all checks pass).
      */
     public function has_purge_post_type( $post_id ) {
-        $default_types = [ 'post', 'page' ];
-
-        /**
-         * Filter: akamai_purge_post_types
-         *
-         * @since 0.7.0
-         * @param array $types The list of post types that a purge will
-         *              fire for. Must add custom post types here!
-         */
-        $types = \apply_filters(
-            'akamai_purge_post_types', $default_types );
-        return in_array( \get_post_type( $post_id ), $types, true );
+        return in_array(
+            \get_post_type( $post_id ),
+            \akamai_cacheable_post_types(),
+            true
+        );
     }
 
     /**
@@ -517,17 +503,10 @@ class Purge {
      * @return bool Whether to fire a purge (given all checks pass).
      */
     public function has_purge_term_taxonomy( $taxonomy ) {
-
-        /**
-         * Filter: akamai_purge_taxonomies
-         *
-         * @since 0.7.0
-         * @param array $taxonomies The list of term taxonomies that a
-         *              purge will fire for. Must add custom term
-         *              taxonomies here!
-         */
-        $taxes = \apply_filters(
-            'akamai_purge_taxonomies', (array) get_taxonomies() );
-        return in_array( $taxonomy, $taxes, true );
+        return in_array(
+            $taxonomy,
+            \akamai_cachable_taxonomies(),
+            true
+        );
     }
 }
