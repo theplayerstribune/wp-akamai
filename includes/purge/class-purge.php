@@ -275,7 +275,12 @@ class Purge {
         do_action( "akamai_pre_purge_{$purge_ctx->object_type()}", [ 'ctx' => $purge_ctx ] );
         do_action( 'akamai_pre_purge', [ 'ctx' => $purge_ctx ] );
 
-        $response = $client->purge( $purge_ctx );
+        $response = $client->purge(
+            $method   = $purge_ctx->purge_method(),
+            $path     = $purge_ctx->path(),
+            $objects  = $purge_ctx->purge_objects(),
+            $hostname = $purge_ctx->hostname()
+        );
 
         /**
          * Action: akamai_post_purge_{$OBJECT_TYPE}

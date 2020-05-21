@@ -148,10 +148,20 @@ class Request {
     /**
      * Send a purge request to the Fast Purge v3 API!
      *
-     * @param  Context $ctx A purge metadata instance.
-     * @return array   A normalized Akamai API response.
+     * @param  string $method The purge method (tags, URL, CP code, &c).
+     * @param  string $path The API request path, which combines the
+     *                purge method, network, and type (invalidate!).
+     * @param  array  $objects An array of "objects" to purge. These are
+     *                cache tags when purging by tag, paths when purging
+     *                by URL, codes when purging by CP code, keys when
+     *                purging by key.
+     * @param  string $hostname Optional. The hostname to use when
+     *                purging by URL. Defaults to an empty string, which
+     *                is fine unless we are, in fact, purgin by URL, in
+     *                which case it raises an error.
+     * @return array  A normalized Akamai API response.
      */
-    public function purge( $ctx ) {
+    public function purge( $method, $path, $objects, $hostname = '' ) {
         if ( ! ( $this->auth instanceof Akamai_Auth ) ) {
             return static::normalize_response(
                 $wp_response = null,
@@ -160,9 +170,14 @@ class Request {
             );
         }
 
-        $body = [ 'objects' => $ctx->purge_objects() ];
-        if ( 'url' === $ctx->purge_method() ) {
-            if ( empty( $ctx->hostname() ) ) {
+        $body = [ 'objects' => $objects ];
+
+        // NOTE: this handles the case of a purge by URL method, which
+        // is not implemented yet in purge by update, not by direct
+        // purges in the menu. But including it makes it much, much
+        // easier to "turn on" the direct purge by url, so it stays.
+        if ( 'url' === $method ) {
+            if ( empty( $hostname ) ) {
                 // TODO: class Akamai\WP_Plugin\Exception extends \Exception {},
                 //       appends AKAMAI_PLUGIN_INTERNAL: ...
                 throw new \Exception(
@@ -170,12 +185,12 @@ class Request {
                     'can not create URL purge request without hostname'
                 );
             }
-            $body['hostname'] = $ctx->hostname();
+            $body['hostname'] = $hostname;
         }
         $body_json = wp_json_encode( $body );
 
         $this->auth->setHttpMethod( 'POST' );
-        $this->auth->setPath( $ctx->path() );
+        $this->auth->setPath( $path );
         $this->auth->setBody( $body_json );
         $request = $this->wp_request_from_auth();
 
