@@ -13,6 +13,7 @@ namespace Akamai\WordPress\Cache;
  * @package Akamai\WordPress\Cache
  */
 class Headers {
+    use \Akamai\WordPress\Hook_Loader;
 
     /**
      * The one instance of Cache\Tags.
@@ -100,9 +101,10 @@ class Headers {
         $this->plugin = $plugin;
         $this->ct = Tags::instance( $plugin );
 
-        // TODO: send these back to the plugin loader.
-        add_action( 'wp', [ $this, 'emit_cache_tags' ], 102 );
-        add_action( 'wp', [ $this, 'emit_cache_control' ], 102 );
+        $this->action_hooks = [
+            [ 'wp', [ $this, 'emit_cache_tags' ], 102 ],
+            [ 'wp', [ $this, 'emit_cache_control' ], 102 ],
+        ];
     }
 
     /**

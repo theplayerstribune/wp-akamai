@@ -317,7 +317,7 @@ class Context {
      * Get the context as a PHP array (hash). Map property names to
      * dasherized versions to align with settings properties, so a
      * settings hash and a context hash are interchangeable. Map values
-     * the results of getters to ensure data consistency and validation.
+     * to results of getters to ensure data consistency and validation.
      *
      * @since  0.7.0
      * @return array A list of all the gettable properties in the context.

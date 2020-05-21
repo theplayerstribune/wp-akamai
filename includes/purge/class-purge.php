@@ -13,10 +13,13 @@ use \Akamai\WordPress\Cache\Tags;
  * hooks around purges, and fires off purge requests. Based on
  * \Purgely_Purges from the Fastly WP plugin.
  *
+ * @todo TODO: add auther/user update purges!
+ *
  * @since   0.7.0
  * @package Akamai\WordPress\Purge
  */
 class Purge {
+    use \Akamai\WordPress\Hook_Loader;
 
     /**
      * The one instance of Purge.
@@ -68,28 +71,24 @@ class Purge {
         $this->plugin = $plugin;
         $this->ct = Tags::instance( $plugin );
 
-        // TODO: send these back to the plugin loader.
-        // TODO: add auther/user update purges!
+        $this->action_hooks = [
+            [ 'admin_notices', [ $this, 'display_purge_notices' ] ],
+        ];
+
+        // Filter and then add the update-on-purge triggering actions
+        // for each WP object type. TODO: WP_User triggers.
         $instance = $this; // Just to be PHP < 6.0 compliant.
         foreach ( $this->purge_post_actions() as $action ) {
-            add_action(
-                $action,
-                function ( $post_id ) use ( $instance, $action ) {
-                    return $instance->purge_post( $post_id, $action );
-                },
-                10,
-                1
-            );
+            $callback = function ( $post_id ) use ( $instance, $action ) {
+                return $instance->purge_post( $post_id, $action );
+            };
+            $this->action_hooks[] = [ $action, $callback, 10, 1 ];
         }
         foreach ( $this->purge_term_actions() as $action ) {
-            add_action(
-                $action,
-                function ( $term_id, $tt_id, $taxonomy ) use ( $instance, $action ) {
-                    return $instance->purge_term( $term_id, $action, $tt_id, $taxonomy );
-                },
-                10,
-                3
-            );
+            $callback = function ( $term_id, $tt_id, $taxonomy ) use ( $instance, $action ) {
+                return $instance->purge_term( $term_id, $action, $tt_id, $taxonomy );
+            };
+            $this->action_hooks[] = [ $action, $callback, 10, 3 ];
         }
     }
 

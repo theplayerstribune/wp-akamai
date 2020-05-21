@@ -157,6 +157,7 @@ namespace Akamai\WordPress {
          */
         private function load_dependencies() {
             require_once AKAMAI_PLUGIN_PATH . 'includes/class-loader.php';
+            require_once AKAMAI_PLUGIN_PATH . 'includes/trait-hook-loader.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-purge.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-request.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-context.php';
@@ -174,36 +175,33 @@ namespace Akamai\WordPress {
          * @access private
          */
         private function define_admin_hooks() {
-            // Add Admin/Settings menu hooks to the plugin.
-            $this->loader->add_action(
-                'admin_enqueue_scripts', $this->admin, 'enqueue_styles' );
-            $this->loader->add_action(
-                'admin_enqueue_scripts', $this->admin, 'enqueue_scripts' );
-            $this->loader->add_action(
-                'admin_menu', $this->admin, 'add_plugin_admin_menu' );
-            $this->loader->add_filter(
-                "plugin_action_links_{$this->basename}",
-                $this->admin,
-                'add_action_links'
-            );
+            // Admin/Settings menu hooks.
+            foreach ( $this->admin->actions() as $action_hook ) {
+                $this->loader->add_action( ...$action_hook );
+            }
+            foreach ( $this->admin->filters() as $filter_hook ) {
+                $this->loader->add_filter( ...$filter_hook );
+            }
 
-            // Save/update plugin options; load error messages on settings page.
-            $this->loader->add_action(
-                'admin_init', $this->admin, 'settings_update' );
-            $this->loader->add_action(
-                "load-{$this->admin->menu_page_id}", $this->admin, 'settings_load' );
+            // Purging action hooks.
+            // TODO: bc the loader doesn't automatically handle passing
+            //       closures as callables (as opposed to the 2-tuple
+            //       construction [ ctx, method ] ), not sending most of
+            //       the registered actions...
+            foreach ( $this->purge->actions() as $action_hook ) {
+                $this->loader->add_action( ...$action_hook );
+            }
+            foreach ( $this->purge->filters() as $filter_hook ) {
+                $this->loader->add_filter( ...$filter_hook );
+            }
 
-            // Validate Credentials AJAX.
-            $this->loader->add_action(
-                'wp_ajax_akamai_verify_credentials',
-                $this->admin,
-                'handle_verify_credentials_request'
-            );
-
-            // Purging Actions/Hooks.
-            // TODO: move the hooks defined in Purge\Purge here.
-            $this->loader->add_action(
-                'admin_notices', $this->purge, 'display_purge_notices' );
+            // Cache header / tag hooks.
+            foreach ( $this->cache->actions() as $action_hook ) {
+                $this->loader->add_action( ...$action_hook );
+            }
+            foreach ( $this->cache->filters() as $filter_hook ) {
+                $this->loader->add_filter( ...$filter_hook );
+            }
         }
 
         /**
