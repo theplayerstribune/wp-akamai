@@ -194,17 +194,6 @@ class Cache_Headers {
         global $wp_query;
 
         /**
-         * If a user is logged in, cache control headers should be
-         * ignored. We do not want to cache any logged in
-         * user views. WordPress sets a "Cache-Control:no-cache,
-         * must-revalidate, max-age=0" header for logged in views and
-         * should be sufficient for keeping logged in views uncached.
-         */
-        if ( is_user_logged_in() ) {
-            return;
-        }
-
-        /**
          * Filter: akamai_do_emit_cache_tags
          *
          * @since 0.7.0
