@@ -3,7 +3,7 @@
 namespace Akamai\WordPress\Cache;
 
 /**
- * Cache_Tags is a singleton for managing cache tag behavior.
+ * Cache\Tags is a singleton for managing cache tag behavior.
  *
  * Handles basic rules for generating cache tags (ie surrogate keys),
  * and determining which tags are relevant to (emitted as headers or
@@ -15,13 +15,13 @@ namespace Akamai\WordPress\Cache;
  * @since   0.7.0
  * @package Akamai\WordPress\Cache
  */
-class Cache_Tags {
+class Tags {
 
     /**
-     * The one instance of Cache_Tags.
+     * The one instance of Cache\Tags.
      *
      * @since 0.7.0
-     * @var   Cache_Tags
+     * @var   Tags
      */
     private static $instance;
 
@@ -53,11 +53,11 @@ class Cache_Tags {
     ];
 
     /**
-     * Instantiate or return the one Cache_Tags instance.
+     * Instantiate or return the one Cache\Tags instance.
      *
      * @since  0.7.0
      * @param  string     $plugin The Plugin class instance.
-     * @return Cache_Tags The created instance.
+     * @return Tags The created instance.
      */
     public static function instance( $plugin ) {
         if ( is_null( self::$instance ) ) {
@@ -227,7 +227,7 @@ class Cache_Tags {
          *
          * @since 0.7.0
          * @param string     $tags The list of tags to always purge.
-         * @param Cache_Tags $ct An instance of Cache_Tags: use its
+         * @param Tags $ct An instance of Cache\Tags: use its
          *                   helpers to generate new tags.
          */
         return apply_filters(
@@ -252,7 +252,7 @@ class Cache_Tags {
          * @since 0.7.0
          * @param string     $tags The list of tags to always emit in
          *                   cache headers.
-         * @param Cache_Tags $ct An instance of Cache_Tags: use its
+         * @param Tags $ct An instance of Cache\Tags: use its
          *                   helpers to generate new tags.
          */
         return apply_filters(
@@ -415,7 +415,7 @@ class Cache_Tags {
              *                   By default is empty: must be added in
              *                   the hook.
              * @param WP_Post    $post The post to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_posts = apply_filters(
@@ -431,7 +431,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Related term tags for the post.
              * @param WP_Post    $post The post to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_terms = apply_filters(
@@ -447,7 +447,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Related author tags for the post.
              * @param WP_Post    $post The post to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_authors = apply_filters(
@@ -465,7 +465,7 @@ class Cache_Tags {
          * @since 0.7.0
          * @param array      $tags The list of tags to emit in the header.
          * @param WP_Post    $post The post to generate emitted tags for.
-         * @param Cache_Tags $ct An instance of Cache_Tags: use its
+         * @param Tags $ct An instance of Cache\Tags: use its
          *                   helpers to generate new tags.
          */
         return apply_filters(
@@ -510,7 +510,7 @@ class Cache_Tags {
              *                   By default is empty: must be added in
              *                   the hook.
              * @param WP_Post    $post The post to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_posts = apply_filters(
@@ -526,7 +526,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Related term tags for the post.
              * @param WP_Post    $post The post to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_terms = apply_filters(
@@ -542,7 +542,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Related author tags for the post.
              * @param WP_Post    $post The post to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_authors = apply_filters(
@@ -564,7 +564,7 @@ class Cache_Tags {
          * @since 0.7.0
          * @param array      $tags The list of tags to purge.
          * @param WP_Post    $post The post to generate purge tags for.
-         * @param Cache_Tags $ct An instance of Cache_Tags: use its
+         * @param Tags $ct An instance of Cache\Tags: use its
          *                   helpers to generate new tags.
          */
         return apply_filters(
@@ -608,7 +608,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Ancestor term tags for the term.
              * @param WP_Term    $term The term to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_terms = apply_filters(
@@ -624,7 +624,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Related post tags for the term.
              * @param WP_Term    $term The term to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_posts = apply_filters(
@@ -642,7 +642,7 @@ class Cache_Tags {
          * @since 0.7.0
          * @param array      $tags The list of tags to emit in the header.
          * @param WP_Term    $post The term to generate emitted tags for.
-         * @param Cache_Tags $ct An instance of Cache_Tags: use its
+         * @param Tags $ct An instance of Cache\Tags: use its
          *                   helpers to generate new tags.
          */
         return apply_filters(
@@ -688,7 +688,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Ancestor term tags for the term.
              * @param WP_Term    $term The term to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_terms = apply_filters(
@@ -704,7 +704,7 @@ class Cache_Tags {
              * @since 0.7.0
              * @param array      $tags Related post tags for the term.
              * @param WP_Term    $term The term to generate tags for.
-             * @param Cache_Tags $ct An instance of Cache_Tags: use its
+             * @param Tags $ct An instance of Cache\Tags: use its
              *                   helpers to generate new tags.
              */
             $r_posts = apply_filters(
@@ -726,7 +726,7 @@ class Cache_Tags {
          * @since 0.7.0
          * @param array      $tags The list of tags to purge.
          * @param WP_Term    $post The term to generate purge tags for.
-         * @param Cache_Tags $ct An instance of Cache_Tags: use its
+         * @param Tags $ct An instance of Cache\Tags: use its
          *                   helpers to generate new tags.
          */
         return apply_filters(

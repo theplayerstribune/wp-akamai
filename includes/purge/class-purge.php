@@ -4,7 +4,7 @@ namespace Akamai\WordPress\Purge;
 
 use \Akamai\WordPress\Admin\Admin;
 use \Akamai\WordPress\Admin\Notice;
-use \Akamai\WordPress\Cache\Cache_Tags;
+use \Akamai\WordPress\Cache\Tags;
 
 /**
  * Purge is a singleton for managing purge behavior.
@@ -53,9 +53,9 @@ class Purge {
      * A reference to the cache tags class instance.
      *
      * @since  0.7.0
-     * @var    Cache_Tags $tagger The cache tags class instance.
+     * @var    Tags $ct The cache tags class instance.
      */
-    public $tagger;
+    public $ct;
 
     /**
      * Initiate actions.
@@ -66,7 +66,7 @@ class Purge {
      */
     protected function __construct( $plugin ) {
         $this->plugin = $plugin;
-        $this->tagger = Cache_Tags::instance( $plugin );
+        $this->ct = Tags::instance( $plugin );
 
         // TODO: send these back to the plugin loader.
         // TODO: add auther/user update purges!
@@ -196,13 +196,13 @@ class Purge {
         // I think...
         switch ( $ctx->object_type() ) {
             case 'post':
-                $tags = $this->tagger->get_tags_for_purge_post(
+                $tags = $this->ct->get_tags_for_purge_post(
                     $ctx->object_id()
                 );
                 $ctx->purge_objects( $tags );
             break;
             case 'term':
-                $tags = $this->tagger->get_tags_for_purge_term(
+                $tags = $this->ct->get_tags_for_purge_term(
                     $ctx->object_id(),
                     $taxonomy = $ctx->object_group()
                 );

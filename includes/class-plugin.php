@@ -81,7 +81,7 @@ namespace Akamai\WordPress {
          * A reference to the cache headers class instance.
          *
          * @since  0.7.0
-         * @var    Cache_Headers $cache The cache headers class instance.
+         * @var    Headers $cache The cache headers class instance.
          */
         public $cache;
 
@@ -141,7 +141,7 @@ namespace Akamai\WordPress {
             $this->loader = new Loader();
             $this->admin = Admin\Admin::instance( $this );
             $this->purge = Purge\Purge::instance( $this );
-            $this->cache = Cache\Cache_Headers::instance( $this );
+            $this->cache = Cache\Headers::instance( $this );
 
             $this->define_admin_hooks();
         }
@@ -160,8 +160,8 @@ namespace Akamai\WordPress {
             require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-purge.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-request.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/purge/class-context.php';
-            require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-tags.php';
-            require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-cache-headers.php';
+            require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-tags.php';
+            require_once AKAMAI_PLUGIN_PATH . 'includes/cache/class-headers.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-admin.php';
             require_once AKAMAI_PLUGIN_PATH . 'includes/admin/class-notice.php';
         }

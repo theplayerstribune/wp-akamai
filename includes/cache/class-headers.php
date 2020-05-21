@@ -3,7 +3,7 @@
 namespace Akamai\WordPress\Cache;
 
 /**
- * Cache_Headers is a singleton for managing cache header behavior.
+ * Headers is a singleton for managing cache header behavior.
  *
  * Generates the default values for the Cache-Control and Edge-Cache-Tag
  * headers, but is easily extensible to include more. Also manages some
@@ -12,22 +12,22 @@ namespace Akamai\WordPress\Cache;
  * @since   0.7.0
  * @package Akamai\WordPress\Cache
  */
-class Cache_Headers {
+class Headers {
 
     /**
-     * The one instance of Cache_Tags.
+     * The one instance of Cache\Tags.
      *
      * @since 0.7.0
-     * @var   Cache_Tags
+     * @var   Tags
      */
     private static $instance;
 
     /**
-     * Instantiate or return the one Cache_Tags instance.
+     * Instantiate or return the one Cache\Tags instance.
      *
      * @since  0.7.0
      * @param  string     $plugin The Plugin class instance.
-     * @return Cache_Tags The created instance.
+     * @return Tags The created instance.
      */
     public static function instance( $plugin ) {
         if ( is_null( self::$instance ) ) {
@@ -85,9 +85,9 @@ class Cache_Headers {
      * A reference to the cache tags class instance.
      *
      * @since  0.7.0
-     * @var    Cache_Tags $tagger The cache tags class instance.
+     * @var    Tags $ct The cache tags class instance.
      */
-    public $tagger;
+    public $ct;
 
     /**
      * Instantiates an instance.
@@ -98,7 +98,7 @@ class Cache_Headers {
      */
     protected function __construct( $plugin ) {
         $this->plugin = $plugin;
-        $this->tagger = Cache_Tags::instance( $plugin );
+        $this->ct = Tags::instance( $plugin );
 
         // TODO: send these back to the plugin loader.
         add_action( 'wp', [ $this, 'emit_cache_tags' ], 102 );
@@ -141,7 +141,7 @@ class Cache_Headers {
          *
          * @param bool          $do_emit Whether to emit the header.
          * @param \WP_Query     $wp_query The main query object.
-         * @param Cache_Headers $cache This instance. Good helpers!
+         * @param Headers $cache This instance. Good helpers!
          */
         $do_emit = apply_filters(
             'akamai_do_emit_cache_control',
@@ -160,7 +160,7 @@ class Cache_Headers {
          *
          * @param string        $header The Cache-Control header value.
          * @param \WP_Query     $wp_query The main query object.
-         * @param Cache_Headers $cache This instance. Good helpers!
+         * @param Headers $cache This instance. Good helpers!
          */
         $cache_control = apply_filters(
             'akamai_cache_control_header',
@@ -200,7 +200,7 @@ class Cache_Headers {
          *
          * @param bool          $do_emit Whether to emit the header.
          * @param \WP_Query     $wp_query The main query object.
-         * @param Cache_Headers $cache This instance. Good helpers!
+         * @param Headers $cache This instance. Good helpers!
          */
         $do_emit = apply_filters(
             'akamai_do_emit_cache_tags',
@@ -220,7 +220,7 @@ class Cache_Headers {
          * @param bool          $do_emit Whether to include related
          *                      objects tags.
          * @param \WP_Query     $wp_query The main query object.
-         * @param Cache_Headers $cache This instance. Good helpers!
+         * @param Headers $cache This instance. Good helpers!
          */
         $include_related = apply_filters(
             'akamai_cache_include_related_tags',
@@ -233,9 +233,9 @@ class Cache_Headers {
         $template_types = $this->template_types( $wp_query );
 
         // Gather tags, then merge, de-dupe, and prune.
-        $universal_tags = $this->tagger->get_tags_for_emit_universal();
+        $universal_tags = $this->ct->get_tags_for_emit_universal();
         $template_tags = array_map(
-            [ $this->tagger, 'get_template_tag' ],
+            [ $this->ct, 'get_template_tag' ],
             $template_types
         );
         $object_tags = [];
@@ -243,7 +243,7 @@ class Cache_Headers {
             in_array( 'post', $template_types ) ||
             in_array( 'page', $template_types ) ||
             in_array( 'attachment', $template_types ) ) {
-            $object_tags = $this->tagger->get_tags_for_emit_post(
+            $object_tags = $this->ct->get_tags_for_emit_post(
                 $wp_query->post, $include_related );
         } else {
             // Default is to get tags for all posts on page.
@@ -251,13 +251,13 @@ class Cache_Headers {
             foreach ( $wp_query->posts as $post ) {
                 $object_tags = array_merge(
                     $object_tags,
-                    $this->tagger->get_tags_for_emit_post( $post, false )
+                    $this->ct->get_tags_for_emit_post( $post, false )
                 );
             }
         }
         if ( in_array( 'term', $template_types ) ) {
             $term = $wp_query->get_queried_object();
-            $object_tags = $this->tagger->get_tags_for_emit_term(
+            $object_tags = $this->ct->get_tags_for_emit_term(
                 $term, $term->taxonomy, $include_related );
         }
 
@@ -286,7 +286,7 @@ class Cache_Headers {
          *
          * @param array         $cache_tags The list of cache tags to emit.
          * @param \WP_Query     $wp_query The main query object.
-         * @param Cache_Headers $cache This instance. Good helpers!
+         * @param Headers $cache This instance. Good helpers!
          */
         foreach ( $template_types as $template ) {
             $cache_tags = apply_filters(
@@ -309,7 +309,7 @@ class Cache_Headers {
          *
          * @param array         $cache_tags The final list of tags to emit.
          * @param \WP_Query     $wp_query The main query object.
-         * @param Cache_Headers $cache This instance. Good helpers!
+         * @param Headers $cache This instance. Good helpers!
          */
         $cache_tags = apply_filters(
             'akamai_emit_cache_tags',
