@@ -505,7 +505,7 @@ class Purge {
     public function has_purge_term_taxonomy( $taxonomy ) {
         return in_array(
             $taxonomy,
-            \akamai_cachable_taxonomies(),
+            \akamai_cacheable_taxonomies(),
             true
         );
     }

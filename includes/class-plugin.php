@@ -357,58 +357,58 @@ namespace Akamai\WordPress {
 namespace {
 
     /**
-     * Get a list of filtered post types marked as "cachable," ie that
+     * Get a list of filtered post types marked as "cacheable," ie that
      * should be included in cache headers and purges.
      *
      * @since  0.7.1
      * @return string The filtered list of cacheable post types.
      */
-    function akamai_cachable_post_types() {
+    function akamai_cacheable_post_types() {
         $default_types = [ 'post', 'page' ];
 
         /**
-         * Filter: akamai_cachable_post_types
+         * Filter: akamai_cacheable_post_types
          *
          * @since 0.7.0
          * @param array $types The list of post types that a purge will
          *              fire for. Must add custom post types here!
          */
         return \apply_filters(
-            'akamai_cachable_post_types', $default_types );
+            'akamai_cacheable_post_types', $default_types );
     }
 
     /**
-     * Get a list of filtered post statuses marked as "cachable," ie that
+     * Get a list of filtered post statuses marked as "cacheable," ie that
      * should be included in cache headers and purges.
      *
      * @since  0.7.1
      * @return string The filtered list of cacheable post statuses.
      */
-    function akamai_cachable_post_statuses() {
+    function akamai_cacheable_post_statuses() {
         $default_statuses = [ 'publish', 'trash', 'future', 'draft' ];
 
         /**
-         * Filter: akamai_cachable_post_statuses
+         * Filter: akamai_cacheable_post_statuses
          *
          * @since 0.7.0
          * @param array $statuses The list of post-update post statuses
          *              that a purge will fire for.
          */
         return \apply_filters(
-            'akamai_cachable_post_statuses', $default_statuses );
+            'akamai_cacheable_post_statuses', $default_statuses );
     }
 
     /**
-     * Get a list of filtered taxonomies marked as "cachable," ie that
+     * Get a list of filtered taxonomies marked as "cacheable," ie that
      * should be included in cache headers and purges.
      *
      * @since  0.7.1
      * @return string The filtered list of cacheable term taxonomies.
      */
-    function akamai_cachable_taxonomies() {
+    function akamai_cacheable_taxonomies() {
 
         /**
-         * Filter: akamai_cachable_taxonomies
+         * Filter: akamai_cacheable_taxonomies
          *
          * @since 0.7.0
          * @param array $taxonomies The list of term taxonomies that a
@@ -416,11 +416,11 @@ namespace {
          *              taxonomies here!
          */
         return \apply_filters(
-            'akamai_cachable_taxonomies', [ 'tag', 'category' ] );
+            'akamai_cacheable_taxonomies', [ 'tag', 'category' ] );
     }
 
     /**
-     * Get a list of filtered user roles marked as "cachable," ie that
+     * Get a list of filtered user roles marked as "cacheable," ie that
      * should be included in cache headers and purges.
      *
      * @todo
@@ -430,7 +430,7 @@ namespace {
      * @since  0.7.1
      * @return string The filtered list of cacheable user roles.
      */
-    function akamai_cachable_roles() {
+    function akamai_cacheable_roles() {
         return [];
     }
 }

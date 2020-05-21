@@ -324,9 +324,6 @@ class Cache_Tags {
     public function related_post_tags( $term ) {
         $tags = [];
 
-        if ( ! is_string( $taxonomy ) ) {
-            $taxonomy = '';
-        }
         if ( is_int( $term ) ) {
             $term = get_term( $term, $term->taxonomy );
         }
@@ -366,9 +363,6 @@ class Cache_Tags {
     public function ancestor_term_tags( $term ) {
         $tags = [];
 
-        if ( ! is_string( $taxonomy ) ) {
-            $taxonomy = '';
-        }
         if ( is_int( $term ) ) {
             $term = get_term( $term, $term->taxonomy );
         }
