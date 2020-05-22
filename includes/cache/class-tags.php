@@ -157,11 +157,12 @@ class Tags {
      * Post tag helper to generate standardized, unique tags.
      *
      * @since  0.7.0
-     * @param  \WP_Post|int $value The post or post id to generate a tag for.
-     * @return string The tag.
+     * @param  WP_Post|stdClass|int $value The post or post id to
+     *                              generate a tag for.
+     * @return string               The tag.
      */
     public function get_post_tag( $value ) {
-        if ( $value instanceof \WP_Post ) {
+        if ( is_object( $value ) && property_exists( $value, 'ID' ) ) {
             $value = $value->ID;
         }
         $tag_part = $this->tag_part( 'post', (string) $value );
@@ -172,11 +173,12 @@ class Tags {
      * Term tag helper to generate standardized, unique tags.
      *
      * @since  0.7.0
-     * @param  \WP_Term|int $value The term or term id to generate a tag for.
-     * @return string The tag.
+     * @param  WP_Term|stdClass|int $value The term or term id to
+     *                              generate a tag for.
+     * @return string               The tag.
      */
     public function get_term_tag( $value ) {
-        if ( $value instanceof \WP_Term ) {
+        if ( is_object( $value ) && property_exists( $value, 'term_id' ) ) {
             $value = $value->term_id;
         }
         $tag_part = $this->tag_part( 'term', (string) $value );
@@ -187,11 +189,12 @@ class Tags {
      * User (author) tag helper to generate standardized, unique tags.
      *
      * @since  0.7.0
-     * @param  \WP_User|int $value The user or user id to generate a tag for.
-     * @return string The tag.
+     * @param  WP_User|stdClass|int $value The user or user id to
+     *                              generate a tag for.
+     * @return string               The tag.
      */
     public function get_author_tag( $value ) {
-        if ( $value instanceof \WP_User ) {
+        if ( is_object( $value ) && property_exists( $value, 'id' ) ) {
             $value = $value->id;
         }
         $tag_part = $this->tag_part( 'author', (string) $value );
@@ -264,8 +267,8 @@ class Tags {
      * sake.
      *
      * @since  0.7.0
-     * @param  \WP_Post $post The post to search for related author information.
-     * @return array    The author tag(s).
+     * @param  WP_Post $post The post to search for related author information.
+     * @return array   The author tag(s).
      */
     public function related_author_tags( $post ) {
         if ( is_int( $post ) ) {
@@ -285,8 +288,8 @@ class Tags {
      * every taxonomy. Filter taxonomies for fun and profit.
      *
      * @since  0.7.0
-     * @param  \WP_Post $post The post to search for related term information.
-     * @return array    The related term tags.
+     * @param  WP_Post $post The post to search for related term information.
+     * @return array   The related term tags.
      */
     public function related_term_tags( $post ) {
         $tags = [];
@@ -318,8 +321,8 @@ class Tags {
      * Get all the posts that have this term assigned to them.
      *
      * @since  0.7.0
-     * @param  \WP_Term $term The term to search for related posts.
-     * @return array    The related post tags.
+     * @param  WP_Term $term The term to search for related posts.
+     * @return array   The related post tags.
      */
     public function related_post_tags( $term ) {
         $tags = [];
@@ -357,8 +360,8 @@ class Tags {
      * Get any ancestor (parent, etc) terms in the given term's taxonomy.
      *
      * @since  0.7.0
-     * @param  \WP_Term $term The term to search for ancestor terms.
-     * @return array    The related term tags.
+     * @param  WP_Term $term The term to search for ancestor terms.
+     * @return array   The related term tags.
      */
     public function ancestor_term_tags( $term ) {
         $tags = [];
@@ -411,12 +414,12 @@ class Tags {
              * Filter: akamai_tags_emit_post_related_posts
              *
              * @since 0.7.0
-             * @param array      $tags Related post tags for the post.
-             *                   By default is empty: must be added in
-             *                   the hook.
-             * @param WP_Post    $post The post to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Related post tags for the post.
+             *                By default is empty: must be added in
+             *                the hook.
+             * @param WP_Post $post The post to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_posts = apply_filters(
                 'akamai_tags_emit_post_related_posts',
@@ -429,10 +432,10 @@ class Tags {
              * Filter: akamai_tags_emit_post_related_terms
              *
              * @since 0.7.0
-             * @param array      $tags Related term tags for the post.
-             * @param WP_Post    $post The post to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Related term tags for the post.
+             * @param WP_Post $post The post to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_terms = apply_filters(
                 'akamai_tags_emit_post_related_terms',
@@ -445,10 +448,10 @@ class Tags {
              * Filter: akamai_tags_emit_post_related_authors
              *
              * @since 0.7.0
-             * @param array      $tags Related author tags for the post.
-             * @param WP_Post    $post The post to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Related author tags for the post.
+             * @param WP_Post $post The post to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_authors = apply_filters(
                 'akamai_tags_emit_post_related_authors',
@@ -463,10 +466,10 @@ class Tags {
          * Filter: akamai_tags_emit_post
          *
          * @since 0.7.0
-         * @param array      $tags The list of tags to emit in the header.
-         * @param WP_Post    $post The post to generate emitted tags for.
-         * @param Tags $ct An instance of Cache\Tags: use its
-         *                   helpers to generate new tags.
+         * @param array   $tags The list of tags to emit in the header.
+         * @param WP_Post $post The post to generate emitted tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its
+         *                helpers to generate new tags.
          */
         return apply_filters(
             'akamai_tags_emit_post', $tags, $post, static::$instance );
@@ -477,12 +480,12 @@ class Tags {
      * to be purged.
      *
      * @since  0.7.0
-     * @param  \WP_Post $post The post to generate purge tags for.
-     * @param  bool     $related Optional. Also purge related posts, terms and
-     *                  authors. Defaults to true.
-     * @param  bool     $always  Optional. Also purge the always-purged tags.
-     *                  Defaults to true.
-     * @return array    The tags.
+     * @param  WP_Post $post The post to generate purge tags for.
+     * @param  bool    $related Optional. Also purge related posts, terms and
+     *                 authors. Defaults to true.
+     * @param  bool    $always  Optional. Also purge the always-purged tags.
+     *                 Defaults to true.
+     * @return array   The tags.
      */
     public function get_tags_for_purge_post( $post, $related = true, $always = true ) {
         $tags = [];
@@ -506,12 +509,12 @@ class Tags {
              * Filter: akamai_tags_purge_post_related_posts
              *
              * @since 0.7.0
-             * @param array      $tags Related post tags for the post.
-             *                   By default is empty: must be added in
-             *                   the hook.
-             * @param WP_Post    $post The post to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Related post tags for the post.
+             *                By default is empty: must be added in
+             *                the hook.
+             * @param WP_Post $post The post to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_posts = apply_filters(
                 'akamai_tags_purge_post_related_posts',
@@ -606,13 +609,13 @@ class Tags {
              * Filter: akamai_tag_emit_term_ancestor_terms
              *
              * @since 0.7.0
-             * @param array      $tags Ancestor term tags for the term.
-             * @param WP_Term    $term The term to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Ancestor term tags for the term.
+             * @param WP_Term $term The term to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_terms = apply_filters(
-                'akamai_tag_emit_term_ancestor_terms',
+                'akamai_tags_emit_term_ancestor_terms',
                 $this->ancestor_term_tags( $term ),
                 $term,
                 static::$instance
@@ -622,13 +625,13 @@ class Tags {
              * Filter: akamai_tag_emit_term_related_posts
              *
              * @since 0.7.0
-             * @param array      $tags Related post tags for the term.
-             * @param WP_Term    $term The term to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Related post tags for the term.
+             * @param WP_Term $term The term to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_posts = apply_filters(
-                'akamai_tag_emit_term_related_posts',
+                'akamai_tags_emit_term_related_posts',
                 $this->related_post_tags( $term ),
                 $term,
                 static::$instance
@@ -640,10 +643,10 @@ class Tags {
          * Filter: akamai_tags_emit_term
          *
          * @since 0.7.0
-         * @param array      $tags The list of tags to emit in the header.
-         * @param WP_Term    $post The term to generate emitted tags for.
-         * @param Tags $ct An instance of Cache\Tags: use its
-         *                   helpers to generate new tags.
+         * @param array   $tags The list of tags to emit in the header.
+         * @param WP_Term $post The term to generate emitted tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its helpers
+         *                to generate new tags.
          */
         return apply_filters(
             'akamai_tags_emit_term', $tags, $term, static::$instance );
@@ -676,7 +679,7 @@ class Tags {
              * {@see akamai_tags_purge_term}
              */
             return apply_filters(
-                'akamai_purge_term_tags', $tags, $term, static::$instance );
+                'akamai_tags_purge_term', $tags, $term, static::$instance );
         }
         $tags[] = $this->get_term_tag( $term );
 
@@ -686,13 +689,13 @@ class Tags {
              * Filter: akamai_tag_purge_term_ancestor_terms
              *
              * @since 0.7.0
-             * @param array      $tags Ancestor term tags for the term.
-             * @param WP_Term    $term The term to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Ancestor term tags for the term.
+             * @param WP_Term $term The term to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_terms = apply_filters(
-                'akamai_purge_term_ancestor_terms',
+                'akamai_tags_purge_term_ancestor_terms',
                 $this->ancestor_term_tags( $term ),
                 $term,
                 static::$instance
@@ -702,13 +705,13 @@ class Tags {
              * Filter: akamai_tag_purge_term_related_posts
              *
              * @since 0.7.0
-             * @param array      $tags Related post tags for the term.
-             * @param WP_Term    $term The term to generate tags for.
-             * @param Tags $ct An instance of Cache\Tags: use its
-             *                   helpers to generate new tags.
+             * @param array   $tags Related post tags for the term.
+             * @param WP_Term $term The term to generate tags for.
+             * @param Tags    $ct An instance of Cache\Tags: use its
+             *                helpers to generate new tags.
              */
             $r_posts = apply_filters(
-                'akamai_purge_term_related_posts',
+                'akamai_tags_purge_term_related_posts',
                 $this->related_post_tags( $term ),
                 $term,
                 static::$instance
@@ -724,13 +727,13 @@ class Tags {
          * Filter: akamai_tags_purge_term
          *
          * @since 0.7.0
-         * @param array      $tags The list of tags to purge.
-         * @param WP_Term    $post The term to generate purge tags for.
-         * @param Tags $ct An instance of Cache\Tags: use its
-         *                   helpers to generate new tags.
+         * @param array   $tags The list of tags to purge.
+         * @param WP_Term $post The term to generate purge tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its helpers
+         *                to generate new tags.
          */
         return apply_filters(
-            'akamai_purge_term_tags', $tags, $term, static::$instance );
+            'akamai_tags_purge_term', $tags, $term, static::$instance );
     }
 
     /**
