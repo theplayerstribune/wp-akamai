@@ -321,13 +321,13 @@ class Purge {
      * dynamically and once.
      *
      * @since  0.1.0
-     * @param  string  $location The Location header of the redirect: passed in
-     *                 by the filter hook.
-     * @param  string  $response The HTTP response code of the redirect: passed
-     *                 in by the filter hook.
+     * @param  string  $location The Location header of the redirect:
+     *                 passed in by the filter hook.
+     * @param  string  $response The normalized Akamai API response for
+     *                 the purge request.
      * @return Context $purge_ctx General information about the purge.
-     * @param  string  $filter_name The filter this is being fired in, so it can
-     *                 then be removed.
+     * @param  string  $filter_name The filter this is being fired in,
+     *                 so it can then be removed.
      */
     public function add_notice_query_arg(
         $location, $response, $purge_ctx, $filter_name ) {
@@ -339,12 +339,18 @@ class Purge {
              * Filter: akamai_purge_notice_failure
              *
              * @since 0.7.0
-             * @param string $message The message that will be shown in
-             *               the notice.
+             * @param string  $message The message that will be shown in
+             *                the notice.
+             * @param string  $response The normalized Akamai API
+             *                response for the purge request.
+             * @param Context $purge_ctx General information about the
+             *                purge.
              */
             $message = apply_filters(
                 'akamai_purge_notice_failure',
-                'Unable to purge cache: ' . $response['error']
+                'Unable to purge cache: ' . $response['error'],
+                $response,
+                $purge_ctx
             );
             return add_query_arg(
                 [ 'akamai-cache-purge-error' => urlencode( $message ) ],
@@ -362,10 +368,18 @@ class Purge {
          * Filter: akamai_purge_notice_success
          *
          * @since 0.7.0
-         * @param string $message The message that will be shown in the
-         *               notice.
+         * @param string  $message The message that will be shown in the
+         *                notice.
+         * @param string  $response The normalized Akamai API response
+         *                for the purge request.
+         * @param Context $purge_ctx General information about the purge.
          */
-        $message = apply_filters( 'akamai_purge_notice_success', $message );
+        $message = apply_filters(
+            'akamai_purge_notice_success',
+            $message,
+            $response,
+            $purge_ctx
+        );
         return add_query_arg(
             [ 'akamai-cache-purge-success' => urlencode( $message ) ],
             $location
