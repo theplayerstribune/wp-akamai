@@ -406,7 +406,23 @@ class Tags {
             return apply_filters(
                 'akamai_tags_emit_post', $tags, $post, static::$instance );
         }
-        $tags[] = $this->get_post_tag( $post );
+
+        /**
+         * Filter: akamai_tags_emit_post_self
+         *
+         * @since 0.7.0
+         * @param array   $tags The post's own tag(s) to emit.
+         * @param WP_Post $post The post to generate emit tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its helpers
+         *                to generate new tags.
+         */
+        $self_tags = apply_filters(
+            'akamai_tags_emit_post_self',
+            [ $this->get_post_tag( $post ) ],
+            $post,
+            static::$instance
+        );
+        $tags = array_merge( $tags, $self_tags );
 
         if ( $related ) {
 
@@ -501,7 +517,23 @@ class Tags {
             return apply_filters(
                 'akamai_tags_purge_post', $tags, $post, static::$instance );
         }
-        $tags[] = $this->get_post_tag( $post );
+
+        /**
+         * Filter: akamai_tags_purge_post_self
+         *
+         * @since 0.7.0
+         * @param array   $tags The post's own tag(s) to purge.
+         * @param WP_Post $post The post to generate purge tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its helpers
+         *                to generate new tags.
+         */
+        $self_tags = apply_filters(
+            'akamai_tags_purge_post_self',
+            [ $this->get_post_tag( $post ) ],
+            $post,
+            static::$instance
+        );
+        $tags = array_merge( $tags, $self_tags );
 
         if ( $related ) {
 
@@ -601,7 +633,23 @@ class Tags {
             return apply_filters(
                 'akamai_tags_emit_term', $tags, $term, static::$instance );
         }
-        $tags[] = $this->get_term_tag( $term );
+
+        /**
+         * Filter: akamai_tags_emit_term_self
+         *
+         * @since 0.7.0
+         * @param array   $tags The term's own tag(s) to emit.
+         * @param WP_Term $post The term to generate emit tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its helpers
+         *                to generate new tags.
+         */
+        $self_tags = apply_filters(
+            'akamai_tags_emit_term_self',
+            [ $this->get_term_tag( $term ) ],
+            $term,
+            static::$instance
+        );
+        $tags = array_merge( $tags, $self_tags );
 
         if ( $related ) {
 
@@ -681,7 +729,23 @@ class Tags {
             return apply_filters(
                 'akamai_tags_purge_term', $tags, $term, static::$instance );
         }
-        $tags[] = $this->get_term_tag( $term );
+
+        /**
+         * Filter: akamai_tags_purge_term_self
+         *
+         * @since 0.7.0
+         * @param array   $tags The term's own tag(s) to purge.
+         * @param WP_Term $post The term to generate purge tags for.
+         * @param Tags    $ct An instance of Cache\Tags: use its
+         *                helpers to generate new tags.
+         */
+        $self_tags = apply_filters(
+            'akamai_tags_purge_term_self',
+            [ $this->get_term_tag( $term ) ],
+            $term,
+            static::$instance
+        );
+        $tags = array_merge( $tags, $self_tags );
 
         if ( $related ) {
 
