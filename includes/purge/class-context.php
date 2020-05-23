@@ -32,6 +32,7 @@ class Context {
      * @var string|null $purge_method
      * @var string|null $purge_network
      * @var array|null  $purge_objects
+    *  @var bool|null   $do_log
      * @var string|null $version
      * @var array       $meta
      */
@@ -45,6 +46,7 @@ class Context {
     private $purge_method = null;
     private $purge_network = null;
     private $purge_objects = null;
+    private $do_log = null;
     private $version = null;
     private $meta = [];
 
@@ -65,6 +67,7 @@ class Context {
         $this->purge_method   = $plugin->setting( 'purge-method' );
         $this->purge_network  = $plugin->setting( 'purge-network' );
         $this->version        = $plugin->setting( 'version' );
+        $this->do_log         = $plugin->setting( 'log-purges' );
         $this->purge_objects  = [];
 
         $this->purge_type = ! empty( $this->purge_type )
@@ -189,7 +192,7 @@ class Context {
      * returned.
      *
      * @since  0.7.0
-     * @param  string $hostname The hostname
+     * @param  string $hostname Optional. The hostname to set.
      * @return string The hostname.
      */
     public function hostname( $hostname = null ) {
@@ -205,7 +208,7 @@ class Context {
      * returned.
      *
      * @since  0.7.0
-     * @param  string $purge_type The purge_type
+     * @param  string $purge_type Optional. The purge_type to set.
      * @return string The purge_type.
      */
     public function purge_type( $type = null ) {
@@ -221,7 +224,7 @@ class Context {
      * returned, after a quick validation.
      *
      * @since  0.7.0
-     * @param  string $purge_method The purge_method
+     * @param  string $purge_method Optional. The purge_method to set.
      * @return string The purge_method.
      */
     public function purge_method( $method = null ) {
@@ -244,7 +247,7 @@ class Context {
      * returned, after a quick validation.
      *
      * @since  0.7.0
-     * @param  string $purge_network The purge_network
+     * @param  string $purge_network Optional. The purge_network to set.
      * @return string The purge_network.
      */
     public function purge_network( $network = null ) {
@@ -267,7 +270,7 @@ class Context {
      * returned.
      *
      * @since  0.7.0
-     * @param  array $purge_objects The purge_objects
+     * @param  array $purge_objects Optional. The purge_objects to set.
      * @return array The purge_objects.
      */
     public function purge_objects( $objects = null ) {
@@ -275,6 +278,22 @@ class Context {
             $this->purge_objects = $objects;
         }
         return (array) $this->purge_objects;
+    }
+
+    /**
+     * A getter and setter for the do_log property. If a value is
+     * passed, it sets the property. The current property is always
+     * returned.
+     *
+     * @since  0.7.0
+     * @param  bool $do_log Optional. The do_log value to set.
+     * @return bool The purge_objects.
+     */
+    public function do_log( $do_log = null ) {
+        if ( ! is_null( $do_log ) ) {
+            $this->do_log = $do_log;
+        }
+        return (bool) $this->do_log;
     }
 
     /**

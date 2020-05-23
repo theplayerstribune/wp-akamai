@@ -276,10 +276,11 @@ class Purge {
         do_action( 'akamai_pre_purge', [ 'ctx' => $purge_ctx ] );
 
         $response = $client->purge(
-            $method   = $purge_ctx->purge_method(),
-            $path     = $purge_ctx->path(),
-            $objects  = $purge_ctx->purge_objects(),
-            $hostname = $purge_ctx->hostname()
+            $method    = $purge_ctx->purge_method(),
+            $path      = $purge_ctx->path(),
+            $objects   = $purge_ctx->purge_objects(),
+            $hostname  = $purge_ctx->hostname(),
+            $log_purge = $purge_ctx->do_log()
         );
 
         /**

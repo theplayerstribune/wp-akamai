@@ -159,9 +159,11 @@ class Request {
      *                purging by URL. Defaults to an empty string, which
      *                is fine unless we are, in fact, purgin by URL, in
      *                which case it raises an error.
+     * @param  bool   $log_purges Optional. Defaults to false.
      * @return array  A normalized Akamai API response.
      */
-    public function purge( $method, $path, $objects, $hostname = '' ) {
+    public function purge(
+        $method, $path, $objects, $hostname = '', $log_purge = false ) {
         if ( ! ( $this->auth instanceof Akamai_Auth ) ) {
             return static::normalize_response(
                 $wp_response = null,
@@ -194,7 +196,7 @@ class Request {
         $this->auth->setBody( $body_json );
         $request = $this->wp_request_from_auth();
 
-        if ( isset( $options['log-purges'] ) && $options['log-purges'] ) {
+        if ( $log_purge ) {
             error_log(
                 print_r(
                     [ 'AKAMAI_PLUGIN_INTERNAL: purge_request' => $request ],
@@ -203,7 +205,7 @@ class Request {
             );
         }
         $response = static::normalize_response( wp_remote_post( ...$request ) );
-        if ( isset( $options['log-purges'] ) && $options['log-purges'] ) {
+        if ( $log_purge ) {
             error_log(
                 print_r(
                     [ 'AKAMAI_PLUGIN_INTERNAL: purge_response' => $response ],
