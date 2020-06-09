@@ -27,12 +27,6 @@
         return a[0].toString();
     }
 
-    function NoticeDrawer({ onPush }) {
-        this.drawer    = {};
-        this.successes = [];
-        this.onPush    = onPush.bind(this);
-    }
-
     jQuery.fn.extend({
         noticeShow: function() {
             $(this).css('opacity', 0)
@@ -53,6 +47,12 @@
             });
         },
     });
+
+    function NoticeDrawer({ onPush }) {
+        this.drawer = {};
+        this.successes = [];
+        this.onPush = onPush.bind(this);
+    }
 
     NoticeDrawer.prototype.add = function ({ id, message, type }) {
         this.drawer[id] = this.createNotification({ id, message, type });
@@ -150,17 +150,31 @@
         });
     });
 
-    const send = {
+    const purge = {
+        $notices: null,
+        notices: null,
         all: { active: true, $spinner: null, $button: null },
         url: { active: true, $spinner: null, $button: null, $input: null },
+        sendAll,
+        sendURL,
+        toggleIsActive,
     };
-    function sendPurgeAll(event) {
+    purge.notices = new NoticeDrawer({
+        onPush: function ({ id, type }) {
+            if ('success' === type && this.successes.length > 1) {
+                this.successes.shift().noticeSlideOut();
+            }
+            purge.$notices.append(this.drawer[id]);
+            this.drawer[id].noticeShow();
+        }
+    });
+    purge.sendAll = function (event) {
         event.preventDefault();
 
         if (!window.confirm('Are you sure you want to purge all?')) {
             return;
         }
-        toggleIsActive(send.all);
+        purge.toggleIsActive(purge.all);
 
         $.ajax({
             method: 'POST',
@@ -175,17 +189,26 @@
         })
         .fail(error => {
             console.log({ purge: { error } });
+            purge.notices.add({
+                id: `akamai-notice-${getRandomNumbers()}`,
+                type: 'error',
+                message: 'Could not purge: ' + error,
+            });
         })
-        .always(() => toggleIsActive(send.all));
+        .always(() => purge.toggleIsActive(purge.all));
     }
-    function sendPurgeURL(event) {
+    purge.sendURL = function (event) {
         event.preventDefault();
 
-        if ('' === send.url.$input.val()) {
-            // TODO: add error notification.
+        if ('' === purge.url.$input.val()) {
+            purge.notices.add({
+                id: `akamai-notice-${getRandomNumbers()}`,
+                type: 'warning',
+                message: 'Must add URL to purge.',
+            });
             return;
         }
-        toggleIsActive(send.url);
+        purge.toggleIsActive(purge.url);
 
         $.ajax({
             method: 'POST',
@@ -197,14 +220,22 @@
         })
         .done(response => {
             console.log({ purge: { response } });
+            purge.url.$input.val('');
         })
         .fail(error => {
             console.log({ purge: { error } });
+            purge.notices.add({
+                id: `akamai-notice-${getRandomNumbers()}`,
+                type: 'error',
+                message: 'Could not purge: ' + error,
+            });
         })
-        .always(() => toggleIsActive(send.url));
+        .always(() => {
+            purge.toggleIsActive(purge.url);
+        });
     }
 
-    function toggleIsActive(action) {
+    purge.toggleIsActive = function (action) {
         if (action.active) {
             action.active = false;
             action.$button.attr('disabled', true);
@@ -220,13 +251,23 @@
 
     // Hook up purge actions.
     $(function() {
-        send.all.$button  = $('#akamai-purge-all-btn');
-        send.all.$spinner = $('#akamai-purge-all-spinner');
-        send.url.$input   = $('#akamai-purge-url');
-        send.url.$button  = $('#akamai-purge-url-btn');
-        send.url.$spinner = $('#akamai-purge-url-spinner');
+        purge.all.$button  = $('#akamai-purge-all-btn');
+        purge.all.$spinner = $('#akamai-purge-all-spinner');
+        purge.url.$input   = $('#akamai-purge-url');
+        purge.url.$button  = $('#akamai-purge-url-btn');
+        purge.url.$spinner = $('#akamai-purge-url-spinner');
+        purge.$notices     = $('#akamai-purge-notices-drawer');
 
-        send.all.$button.click(sendPurgeAll);
-        send.url.$button.click(sendPurgeURL);
+        purge.all.$button.click(purge.sendAll);
+        purge.url.$button.click(purge.sendURL);
     });
+
+    window.wpAkamai = {
+        NoticeDrawer,
+        getCredentials,
+        setVerifyButtonDisabled,
+        getRandomNumbers,
+        verificationNotices,
+        purge,
+    };
 })(window, window.jQuery, window.ajaxurl);

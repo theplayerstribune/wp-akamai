@@ -451,6 +451,7 @@
                 </table>
 
                 <h1><span><?php esc_attr_e( 'Purge Requests', 'wp_admin_style' ); ?></span></h1>
+                <div id="<?php echo $this->name(); ?>-purge-notices-drawer"></div>
                 <table class="form-table">
                     <tbody>
                     <tr>
