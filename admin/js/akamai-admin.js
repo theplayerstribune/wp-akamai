@@ -21,7 +21,7 @@
         const $btn = $(`<button type="button" class="notice-dismiss">
                             <span class="screen-reader-text">Dismiss this notice.</span>
                         </button>`);
-        const $msg = $('<p>').text(message);
+        const $msg = $('<p>').html(message);
 
         $btn.click(function () {
             $div.noticeFadeOut();
@@ -106,6 +106,7 @@
     });
     verify.sendVerification = function (event) {
         event.stopPropagation();
+        event.preventDefault();
 
         verify.setButtonDisabled(true);
         verify.$spinner.css({ visibility: 'visible' }); // FIXME: show/hide
@@ -195,6 +196,7 @@
     });
     purge.sendAll = function (event) {
         event.stopPropagation();
+        event.preventDefault();
 
         if (!window.confirm('Are you sure you want to purge all?')) {
             return;
@@ -211,21 +213,42 @@
         })
         .done(response => {
             console.log({ purge: { response } });
+            if (response.success) {
+                purge.notices.add({
+                    id: `akamai-notice-${getRandomNumbers()}`,
+                    type: 'success',
+                    message: 'Purge all successful!',
+                });
+            } else if (response.error) {
+                purge.notices.add({
+                    id: `akamai-notice-${getRandomNumbers()}`,
+                    type: 'error',
+                    message: 'Could not purge all: ' + response.error,
+                });
+            } else {
+                purge.notices.add({
+                    id: `akamai-notice-${getRandomNumbers()}`,
+                    type: 'error',
+                    message: 'An unexpected error occurred.',
+                });
+            }
         })
         .fail(error => {
             console.log({ purge: { error } });
             purge.notices.add({
                 id: `akamai-notice-${getRandomNumbers()}`,
                 type: 'error',
-                message: 'Could not purge: ' + error,
+                message: 'Could not purge all: ' + error,
             });
         })
         .always(() => purge.toggleIsActive(purge.all));
     }
     purge.sendURL = function (event) {
         event.stopPropagation();
+        event.preventDefault();
 
-        if ('' === purge.url.$input.val()) {
+        const url = purge.url.$input.val();
+        if ('' === url) {
             purge.notices.add({
                 id: `akamai-notice-${getRandomNumbers()}`,
                 type: 'warning',
@@ -241,18 +264,38 @@
             dataType: 'json',
             data: {
                 'action': 'akamai_purge_url',
+                'url': url,
             },
         })
         .done(response => {
             console.log({ purge: { response } });
-            purge.url.$input.val('');
+            if (response.success) {
+                purge.url.$input.val('');
+                purge.notices.add({
+                    id: `akamai-notice-${getRandomNumbers()}`,
+                    type: 'success',
+                    message: 'Purge URL ' + url + ' successful!',
+                });
+            } else if (response.error) {
+                purge.notices.add({
+                    id: `akamai-notice-${getRandomNumbers()}`,
+                    type: 'error',
+                    message: 'Could not purge URL <code>' + url + '</code>: ' + response.error,
+                });
+            } else {
+                purge.notices.add({
+                    id: `akamai-notice-${getRandomNumbers()}`,
+                    type: 'error',
+                    message: 'An unexpected error occurred.',
+                });
+            }
         })
         .fail(error => {
             console.log({ purge: { error } });
             purge.notices.add({
                 id: `akamai-notice-${getRandomNumbers()}`,
                 type: 'error',
-                message: 'Could not purge: ' + error,
+                message: 'Could not purge URL ' + url + ': ' + error,
             });
         })
         .always(() => {
@@ -287,6 +330,7 @@
         purge.url.$button.click(purge.sendURL);
     });
 
+    // Attach all actions to global namespace.
     window.wpAkamai = {
         NoticeDrawer,
         getRandomNumbers,

@@ -108,6 +108,15 @@ class Admin {
                 'wp_ajax_akamai_verify_credentials',
                 [ $this, 'handle_verify_credentials_request' ],
             ],
+            // Purge AJAX.
+            [
+                'wp_ajax_akamai_purge_all',
+                [ $this, 'handle_purge_all_request' ],
+            ],
+            [
+                'wp_ajax_akamai_purge_url',
+                [ $this, 'handle_purge_url_request' ],
+            ],
         ];
         $this->filter_hooks = [
             [
@@ -276,6 +285,32 @@ class Admin {
                 $error = $e->getMessage()
             );
         }
+    }
+
+    /**
+     * Attempts to purge all, sending the result as an XHR/JSON response.
+     *
+     * @todo TODO: currently this is using cache tags and a universal
+     *       tag that has been added to all output: `$SITEID-all`.
+     *       Instead, the plugin should allow us to set a CP code (or
+     *       codes) for the site, and purge all that are stored!
+     *
+     * @since 0.7.0
+     */
+    public function handle_purge_all_request() {
+        echo json_encode( [ 'error' => 'Not Implemented' ] );
+        wp_die();
+    }
+
+    /**
+     * Attempts to purge a URL, sending the result as an XHR/JSON
+     * response.
+     *
+     * @since 0.7.0
+     */
+    public function handle_purge_url_request() {
+        echo json_encode( [ 'error' => 'Not Implemented' ] );
+        wp_die();
     }
 
     /**
