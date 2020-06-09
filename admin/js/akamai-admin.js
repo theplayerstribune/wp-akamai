@@ -252,7 +252,7 @@
             purge.notices.add({
                 id: `akamai-notice-${getRandomNumbers()}`,
                 type: 'warning',
-                message: 'Must add URL to purge.',
+                message: 'Must give a URL to purge.',
             });
             return;
         }
@@ -274,7 +274,7 @@
                 purge.notices.add({
                     id: `akamai-notice-${getRandomNumbers()}`,
                     type: 'success',
-                    message: 'Purge URL ' + url + ' successful!',
+                    message: response.message,
                 });
             } else if (response.error) {
                 purge.notices.add({
