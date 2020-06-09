@@ -217,7 +217,7 @@
                 purge.notices.add({
                     id: `akamai-notice-${getRandomNumbers()}`,
                     type: 'success',
-                    message: 'Purge all successful!',
+                    message: response.message,
                 });
             } else if (response.error) {
                 purge.notices.add({

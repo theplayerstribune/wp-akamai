@@ -298,7 +298,20 @@ class Admin {
      * @since 0.7.0
      */
     public function handle_purge_all_request() {
-        echo json_encode( [ 'error' => 'Not Implemented' ] );
+        $cache = $this->plugin->cache;
+        $purge = $this->plugin->purge;
+
+        $site_tag  = $cache->ct->get_site_tag();
+        $purge_ctx = $purge->purge_info( 'plugin/purge_all', null );
+        $purge_ctx->purge_objects( $site_tag );
+
+        $response = $this->plugin->purge->purge_request( $purge_ctx );
+        if ( ! $response['error'] ) {
+            $response['message'] = "Purge all successful "
+                . "(using cache tag '{$site_tag}', "
+                . "on {$purge_ctx->purge_network()} network).";
+        }
+        echo json_encode( $response );
         wp_die();
     }
 

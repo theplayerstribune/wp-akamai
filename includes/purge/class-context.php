@@ -133,8 +133,10 @@ class Context {
                 $this->object_type = 'user';
             } else if ( is_a( $this->object, 'WP_Term' ) ) {
                 $this->object_type = 'term';
-            } else {
+            } else if ( is_a( $this->object, 'WP_Post' ) ) {
                 $this->object_type = 'post';
+            } else {
+                $this->object_type = 'null';
             }
         }
         return (string) $this->object_type;
@@ -154,8 +156,10 @@ class Context {
                     break;
                 case 'user':
                 case 'post':
-                default:
                     $this->object_id = $this->object->ID;
+                    break;
+                default:
+                    $this->object_id = 0;
             }
         }
         return (int) $this->object_id;
