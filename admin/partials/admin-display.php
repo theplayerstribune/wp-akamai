@@ -450,11 +450,11 @@
                     </tbody>
                 </table>
 
-                <h1><span style="color: #A0A5AA"><?php esc_attr_e( 'Purge Requests', 'wp_admin_style' ); ?></span></h1>
+                <h1><span><?php esc_attr_e( 'Purge Requests', 'wp_admin_style' ); ?></span></h1>
                 <table class="form-table">
                     <tbody>
                     <tr>
-                        <th scope="row" style="color: #A0A5AA">
+                        <th scope="row">
                             <label for="<?php echo $this->name(); ?>-purge-url">
                                 <?php _e( 'Purge By URL', $this->name() ); ?>
                             </label>
@@ -463,14 +463,19 @@
                             <input type="url" id="<?php echo $this->name(); ?>-purge-url"
                                    placeholder="https://example.com/test"
                                    value=""
-                                   class="regular-text"
-                                   disabled>
-                            <button id="<?php echo $this->name(); ?>-purge-url-btn" class="button button-secondary" disabled>Purge</button>
-                            <p class="description" style="color: #A0A5AA">Paste the URL you want to purge and click the Send Purge Request URL button</p>
+                                   class="regular-text">
+                            <button
+                                id="<?php echo $this->name(); ?>-purge-url-btn"
+                                class="button button-secondary">Purge</button>
+                            <span
+                                id="<?php echo $this->name(); ?>-purge-url-spinner"
+                                class="spinner" style="float: none;"></span>
+                            <p class="description">Paste the URL you want to purge
+                            and click the Send Purge Request URL button</p>
                         </td>
                     </tr>
                     <tr>
-                        <th scope="row" style="color: #A0A5AA">
+                        <th scope="row">
                             <label for="<?php echo $this->name(); ?>-purge-url">
                                 <?php _e( 'Purge All', $this->name() ); ?>
                             </label>
@@ -478,10 +483,11 @@
                         <td>
                             <button
                                 id="<?php echo $this->name(); ?>-purge-all-btn"
-                                class="button button-warning"
-                                style="color: #dc3232; border-color: #dc3232"
-                                disabled>Send Purge All Request</button>
-                            <p class="description" style="color: #A0A5AA"><em><strong>Warning!</strong>
+                                class="button button-warning">Send Purge All Request</button>
+                            <span
+                                id="<?php echo $this->name(); ?>-purge-all-spinner"
+                                class="spinner" style="float: none;"></span>
+                            <p class="description"><em><strong>Warning!</strong>
                             This could cause major disruptions to your site.</em></p>
                         </td>
                     </tr>

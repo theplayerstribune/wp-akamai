@@ -88,6 +88,7 @@
         }
     });
 
+    // Hook up cred verification.
     $(function() {
         setVerifyButtonDisabled();
         $("form :input").keyup(function() { setVerifyButtonDisabled(); });
@@ -147,5 +148,85 @@
                 });
             });
         });
+    });
+
+    const send = {
+        all: { active: true, $spinner: null, $button: null },
+        url: { active: true, $spinner: null, $button: null, $input: null },
+    };
+    function sendPurgeAll(event) {
+        event.preventDefault();
+
+        if (!window.confirm('Are you sure you want to purge all?')) {
+            return;
+        }
+        toggleIsActive(send.all);
+
+        $.ajax({
+            method: 'POST',
+            url: ajaxurl,
+            dataType: 'json',
+            data: {
+                'action': 'akamai_purge_all',
+            },
+        })
+        .done(response => {
+            console.log({ purge: { response } });
+        })
+        .fail(error => {
+            console.log({ purge: { error } });
+        })
+        .always(() => toggleIsActive(send.all));
+    }
+    function sendPurgeURL(event) {
+        event.preventDefault();
+
+        if ('' === send.url.$input.val()) {
+            // TODO: add error notification.
+            return;
+        }
+        toggleIsActive(send.url);
+
+        $.ajax({
+            method: 'POST',
+            url: ajaxurl,
+            dataType: 'json',
+            data: {
+                'action': 'akamai_purge_url',
+            },
+        })
+        .done(response => {
+            console.log({ purge: { response } });
+        })
+        .fail(error => {
+            console.log({ purge: { error } });
+        })
+        .always(() => toggleIsActive(send.url));
+    }
+
+    function toggleIsActive(action) {
+        if (action.active) {
+            action.active = false;
+            action.$button.attr('disabled', true);
+            if (action.$input) action.$input.attr('disabled', true);
+            action.$spinner.addClass('is-active');
+        } else {
+            action.active = true;
+            action.$button.attr('disabled', false);
+            if (action.$input) action.$input.attr('disabled', false);
+            action.$spinner.removeClass('is-active');
+        }
+    }
+
+    // Hook up purge actions.
+    $(function() {
+        send.all.$button  = $('#akamai-purge-all-btn');
+        send.all.$spinner = $('#akamai-purge-all-spinner');
+        send.url.$input   = $('#akamai-purge-url');
+        send.url.$button  = $('#akamai-purge-url-btn');
+        send.url.$spinner = $('#akamai-purge-url-spinner');
+
+        send.all.$button.click(sendPurgeAll);
+        send.url.$button.click(sendPurgeURL);
     });
 })(window, window.jQuery, window.ajaxurl);
