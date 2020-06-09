@@ -108,6 +108,15 @@ class Admin {
                 'wp_ajax_akamai_verify_credentials',
                 [ $this, 'handle_verify_credentials_request' ],
             ],
+            // Purge AJAX.
+            [
+                'wp_ajax_akamai_purge_all',
+                [ $this, 'handle_purge_all_request' ],
+            ],
+            [
+                'wp_ajax_akamai_purge_url',
+                [ $this, 'handle_purge_url_request' ],
+            ],
         ];
         $this->filter_hooks = [
             [
@@ -230,7 +239,7 @@ class Admin {
      *
      * Should run on admin_init, and it is triggered on an update action.
      *
-     * @since	0.1.0
+     * @since 0.1.0
      */
     public function settings_update() {
         register_setting( $this->name(), $this->name(), [ $this, 'validate' ] );
@@ -276,6 +285,62 @@ class Admin {
                 $error = $e->getMessage()
             );
         }
+    }
+
+    /**
+     * Attempts to purge all, sending the result as an XHR/JSON response.
+     *
+     * @todo TODO: currently this is using cache tags and a universal
+     *       tag that has been added to all output: `$SITEID-all`.
+     *       Instead, the plugin should allow us to set a CP code (or
+     *       codes) for the site, and purge all that are stored!
+     *
+     * @since 0.7.0
+     */
+    public function handle_purge_all_request() {
+        $cache = $this->plugin->cache;
+        $purge = $this->plugin->purge;
+
+        $site_tag  = $cache->ct->get_site_tag();
+        $purge_ctx = $purge->purge_info( 'plugin/purge_all', null );
+        $purge_ctx->purge_objects( $site_tag );
+
+        $response = $this->plugin->purge->purge_request( $purge_ctx );
+        if ( ! $response['error'] ) {
+            $response['message'] = "Purge all successful "
+                . "on {$purge_ctx->purge_network()} network(s) "
+                . "(using cache tag '{$site_tag}').";
+        }
+        echo json_encode( $response );
+        wp_die();
+    }
+
+    /**
+     * Attempts to purge a URL, sending the result as an XHR/JSON
+     * response.
+     *
+     * @since 0.7.0
+     */
+    public function handle_purge_url_request() {
+        $cache = $this->plugin->cache;
+        $purge = $this->plugin->purge;
+
+        $url = isset( $_POST['url'] ) ? $_POST['url'] : '';
+        $host = parse_url( $url, PHP_URL_HOST );
+        $path = parse_url( $url, PHP_URL_PATH );
+
+        $purge_ctx = $purge->purge_info( 'plugin/purge_url', null );
+        $purge_ctx->purge_method( 'url' );
+        $purge_ctx->hostname( $host );
+        $purge_ctx->purge_objects( [ $path ] );
+
+        $response = $this->plugin->purge->purge_request( $purge_ctx );
+        if ( ! $response['error'] ) {
+            $response['message'] = "Purge URL <code>{$url}</code> successful "
+                . "on {$purge_ctx->purge_network()} network(s).";
+        }
+        echo json_encode( $response );
+        wp_die();
     }
 
     /**
